@@ -9,38 +9,131 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppFarmerRouteImport } from './routes/app.farmer'
+import { Route as AppDeliveryRouteImport } from './routes/app.delivery'
+import { Route as AppBuyerRouteImport } from './routes/app.buyer'
+import { Route as ApiVoiceRouteImport } from './routes/api/voice'
 
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppFarmerRoute = AppFarmerRouteImport.update({
+  id: '/farmer',
+  path: '/farmer',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDeliveryRoute = AppDeliveryRouteImport.update({
+  id: '/delivery',
+  path: '/delivery',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBuyerRoute = AppBuyerRouteImport.update({
+  id: '/buyer',
+  path: '/buyer',
+  getParentRoute: () => AppRoute,
+} as any)
+const ApiVoiceRoute = ApiVoiceRouteImport.update({
+  id: '/api/voice',
+  path: '/api/voice',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/api/voice': typeof ApiVoiceRoute
+  '/app/buyer': typeof AppBuyerRoute
+  '/app/delivery': typeof AppDeliveryRoute
+  '/app/farmer': typeof AppFarmerRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/api/voice': typeof ApiVoiceRoute
+  '/app/buyer': typeof AppBuyerRoute
+  '/app/delivery': typeof AppDeliveryRoute
+  '/app/farmer': typeof AppFarmerRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/api/voice': typeof ApiVoiceRoute
+  '/app/buyer': typeof AppBuyerRoute
+  '/app/delivery': typeof AppDeliveryRoute
+  '/app/farmer': typeof AppFarmerRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/auth'
+    | '/api/voice'
+    | '/app/buyer'
+    | '/app/delivery'
+    | '/app/farmer'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/app'
+    | '/auth'
+    | '/api/voice'
+    | '/app/buyer'
+    | '/app/delivery'
+    | '/app/farmer'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/auth'
+    | '/api/voice'
+    | '/app/buyer'
+    | '/app/delivery'
+    | '/app/farmer'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  ApiVoiceRoute: typeof ApiVoiceRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +141,57 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/farmer': {
+      id: '/app/farmer'
+      path: '/farmer'
+      fullPath: '/app/farmer'
+      preLoaderRoute: typeof AppFarmerRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/delivery': {
+      id: '/app/delivery'
+      path: '/delivery'
+      fullPath: '/app/delivery'
+      preLoaderRoute: typeof AppDeliveryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/buyer': {
+      id: '/app/buyer'
+      path: '/buyer'
+      fullPath: '/app/buyer'
+      preLoaderRoute: typeof AppBuyerRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/api/voice': {
+      id: '/api/voice'
+      path: '/api/voice'
+      fullPath: '/api/voice'
+      preLoaderRoute: typeof ApiVoiceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppBuyerRoute: typeof AppBuyerRoute
+  AppDeliveryRoute: typeof AppDeliveryRoute
+  AppFarmerRoute: typeof AppFarmerRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppBuyerRoute: AppBuyerRoute,
+  AppDeliveryRoute: AppDeliveryRoute,
+  AppFarmerRoute: AppFarmerRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  AuthRoute: AuthRoute,
+  ApiVoiceRoute: ApiVoiceRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
