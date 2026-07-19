@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { VoiceInput } from "@/components/voice-input";
+import { LocationPicker, type LocationValue } from "@/components/location-picker";
 
 export const Route = createFileRoute("/app/buyer")({
   component: BuyerDash,
