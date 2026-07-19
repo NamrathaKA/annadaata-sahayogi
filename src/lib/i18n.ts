@@ -215,6 +215,23 @@ const hi: Dict = {
   buyer_intro: "किसानों से सीधे ताज़ा उत्पाद खरीदें।",
   delivery_intro: "नज़दीकी डिलीवरी काम स्वीकार करें।",
   select_role_signup: "पंजीकरण के लिए भूमिका चुनें",
+  voice_fill: "आवाज़ से भरें",
+  voice_press_hold: "बोलने के लिए दबाकर रखें",
+  voice_no_value: "साफ़ नहीं सुना, फिर कोशिश करें",
+  voice_too_short: "बहुत छोटा",
+  voice_mic_denied: "माइक अनुमति चाहिए",
+  use_my_location: "मेरा स्थान उपयोग करें",
+  gps_unavailable: "GPS उपलब्ध नहीं",
+  gps_denied: "स्थान अनुमति नहीं मिली",
+  address_placeholder: "गाँव, तालुक, ज़िला",
+  pickup_location: "पिकअप स्थान",
+  farmer_contact: "किसान संपर्क",
+  buyer_contact: "खरीदार संपर्क",
+  open_in_maps: "नक्शे में खोलें",
+  call: "कॉल करें",
+  say_your_name: "अपना नाम बोलें",
+  say_your_phone: "अपना फोन नंबर बोलें",
+  say_your_email: "अपना ईमेल बोलें",
 };
 
 const DICTS: Record<Lang, Dict> = { kn, en, hi, ta: kn, te: kn };
