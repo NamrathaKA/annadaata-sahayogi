@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2 } from "lucide-react";
+import { VoiceInput } from "@/components/voice-input";
+import { LocationPicker, type LocationValue } from "@/components/location-picker";
 
 export const Route = createFileRoute("/app/farmer")({
   component: FarmerDash,
