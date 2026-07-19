@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LANG_NAMES, type Lang } from "@/lib/i18n";
 import { Leaf } from "lucide-react";
 import type { Role } from "@/hooks/use-auth";
+import { VoiceInput } from "@/components/voice-input";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
