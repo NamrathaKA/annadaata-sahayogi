@@ -67,6 +67,23 @@ const kn: Dict = {
   buyer_intro: "ರೈತರಿಂದ ನೇರವಾಗಿ ತಾಜಾ ಉತ್ಪನ್ನಗಳನ್ನು ಖರೀದಿಸಿ.",
   delivery_intro: "ಸಮೀಪದ ಡೆಲಿವರಿ ಕೆಲಸಗಳನ್ನು ಸ್ವೀಕರಿಸಿ.",
   select_role_signup: "ನೋಂದಣಿಗೆ ಪಾತ್ರವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+  voice_fill: "ಧ್ವನಿಯಿಂದ ಭರ್ತಿ",
+  voice_press_hold: "ಒತ್ತಿ ಹಿಡಿದು ಮಾತನಾಡಿ",
+  voice_no_value: "ಸ್ಪಷ್ಟವಾಗಿ ಕೇಳಿಸಲಿಲ್ಲ, ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ",
+  voice_too_short: "ಬಹಳ ಚಿಕ್ಕದು",
+  voice_mic_denied: "ಮೈಕ್ ಅನುಮತಿ ಬೇಕು",
+  use_my_location: "ನನ್ನ ಸ್ಥಳ ಬಳಸಿ",
+  gps_unavailable: "GPS ಲಭ್ಯವಿಲ್ಲ",
+  gps_denied: "ಸ್ಥಳ ಅನುಮತಿ ನಿರಾಕರಿಸಲಾಗಿದೆ",
+  address_placeholder: "ಗ್ರಾಮ, ತಾಲೂಕು, ಜಿಲ್ಲೆ",
+  pickup_location: "ಎತ್ತಿಕೊಳ್ಳುವ ಸ್ಥಳ",
+  farmer_contact: "ರೈತರ ಸಂಪರ್ಕ",
+  buyer_contact: "ಖರೀದಿದಾರರ ಸಂಪರ್ಕ",
+  open_in_maps: "ನಕ್ಷೆಯಲ್ಲಿ ತೆರೆಯಿರಿ",
+  call: "ಕರೆ ಮಾಡಿ",
+  say_your_name: "ನಿಮ್ಮ ಹೆಸರು ಹೇಳಿ",
+  say_your_phone: "ನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆ ಹೇಳಿ",
+  say_your_email: "ನಿಮ್ಮ ಇಮೇಲ್ ಹೇಳಿ",
 };
 
 const en: Dict = {
