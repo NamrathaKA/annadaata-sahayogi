@@ -153,8 +153,9 @@ function AddListing({ farmerId, defaultLocation, onDone }: { farmerId: string; d
   const { t } = useI18n();
   const [f, setF] = useState({
     crop_name: "", quantity: "10", unit: "kg", price_per_unit: "20",
-    location: defaultLocation, harvest_date: "", description: "",
+    harvest_date: "", description: "",
   });
+  const [loc, setLoc] = useState<LocationValue>({ address: defaultLocation, lat: null, lng: null });
   const [busy, setBusy] = useState(false);
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,7 +166,9 @@ function AddListing({ farmerId, defaultLocation, onDone }: { farmerId: string; d
       quantity: Number(f.quantity),
       unit: f.unit,
       price_per_unit: Number(f.price_per_unit),
-      location: f.location,
+      location: loc.address,
+      pickup_lat: loc.lat,
+      pickup_lng: loc.lng,
       harvest_date: f.harvest_date || null,
       description: f.description || null,
     });
@@ -176,17 +179,41 @@ function AddListing({ farmerId, defaultLocation, onDone }: { farmerId: string; d
   return (
     <Card className="mb-4 p-4">
       <form onSubmit={submit} className="grid gap-3 md:grid-cols-2">
-        <div><Label>{t("crop_name")}</Label><Input required value={f.crop_name} onChange={(e) => setF({ ...f, crop_name: e.target.value })} /></div>
-        <div><Label>{t("location")}</Label><Input required value={f.location} onChange={(e) => setF({ ...f, location: e.target.value })} /></div>
-        <div><Label>{t("quantity")}</Label><Input type="number" min="1" required value={f.quantity} onChange={(e) => setF({ ...f, quantity: e.target.value })} /></div>
+        <div>
+          <Label>{t("crop_name")}</Label>
+          <div className="flex gap-2">
+            <Input required value={f.crop_name} onChange={(e) => setF({ ...f, crop_name: e.target.value })} className="flex-1" />
+            <VoiceInput field="text" onValue={(v) => setF({ ...f, crop_name: v })} />
+          </div>
+        </div>
+        <div><Label>{t("quantity")}</Label>
+          <div className="flex gap-2">
+            <Input type="number" min="1" required value={f.quantity} onChange={(e) => setF({ ...f, quantity: e.target.value })} className="flex-1" />
+            <VoiceInput field="number" onValue={(v) => setF({ ...f, quantity: v })} />
+          </div>
+        </div>
         <div><Label>{t("unit")}</Label>
           <select value={f.unit} onChange={(e) => setF({ ...f, unit: e.target.value })} className="w-full rounded-md border bg-background px-3 py-2 text-sm">
             <option value="kg">kg</option><option value="quintal">quintal</option><option value="ton">ton</option><option value="pieces">pieces</option>
           </select>
         </div>
-        <div><Label>{t("price_per_unit")}</Label><Input type="number" min="0" step="0.01" required value={f.price_per_unit} onChange={(e) => setF({ ...f, price_per_unit: e.target.value })} /></div>
+        <div><Label>{t("price_per_unit")}</Label>
+          <div className="flex gap-2">
+            <Input type="number" min="0" step="0.01" required value={f.price_per_unit} onChange={(e) => setF({ ...f, price_per_unit: e.target.value })} className="flex-1" />
+            <VoiceInput field="number" onValue={(v) => setF({ ...f, price_per_unit: v })} />
+          </div>
+        </div>
         <div><Label>{t("harvest_date")}</Label><Input type="date" value={f.harvest_date} onChange={(e) => setF({ ...f, harvest_date: e.target.value })} /></div>
-        <div className="md:col-span-2"><Label>{t("description")}</Label><Textarea value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} /></div>
+        <div className="md:col-span-2">
+          <LocationPicker label={t("pickup_location")} value={loc} onChange={setLoc} />
+        </div>
+        <div className="md:col-span-2">
+          <Label>{t("description")}</Label>
+          <div className="flex gap-2">
+            <Textarea value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} className="flex-1" />
+            <VoiceInput field="text" onValue={(v) => setF({ ...f, description: v })} />
+          </div>
+        </div>
         <div className="flex gap-2 md:col-span-2">
           <Button type="submit" disabled={busy}>{t("save")}</Button>
           <Button type="button" variant="outline" onClick={onDone}>{t("cancel")}</Button>
