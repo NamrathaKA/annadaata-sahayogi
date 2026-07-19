@@ -14,7 +14,143 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      crop_listings: {
+        Row: {
+          created_at: string
+          crop_name: string
+          description: string | null
+          farmer_id: string
+          harvest_date: string | null
+          id: string
+          image_url: string | null
+          location: string
+          price_per_unit: number
+          quantity: number
+          status: Database["public"]["Enums"]["listing_status"]
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          crop_name: string
+          description?: string | null
+          farmer_id: string
+          harvest_date?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string
+          price_per_unit: number
+          quantity: number
+          status?: Database["public"]["Enums"]["listing_status"]
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          crop_name?: string
+          description?: string | null
+          farmer_id?: string
+          harvest_date?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string
+          price_per_unit?: number
+          quantity?: number
+          status?: Database["public"]["Enums"]["listing_status"]
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          buyer_id: string
+          buyer_phone: string | null
+          created_at: string
+          delivery_address: string
+          delivery_id: string | null
+          farmer_id: string
+          id: string
+          listing_id: string
+          notes: string | null
+          quantity: number
+          status: Database["public"]["Enums"]["order_status"]
+          total_price: number
+          updated_at: string
+        }
+        Insert: {
+          buyer_id: string
+          buyer_phone?: string | null
+          created_at?: string
+          delivery_address: string
+          delivery_id?: string | null
+          farmer_id: string
+          id?: string
+          listing_id: string
+          notes?: string | null
+          quantity: number
+          status?: Database["public"]["Enums"]["order_status"]
+          total_price: number
+          updated_at?: string
+        }
+        Update: {
+          buyer_id?: string
+          buyer_phone?: string | null
+          created_at?: string
+          delivery_address?: string
+          delivery_id?: string | null
+          farmer_id?: string
+          id?: string
+          listing_id?: string
+          notes?: string | null
+          quantity?: number
+          status?: Database["public"]["Enums"]["order_status"]
+          total_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "crop_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string
+          id: string
+          language: string
+          location: string | null
+          phone: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string
+          id: string
+          language?: string
+          location?: string | null
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          language?: string
+          location?: string | null
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +159,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      listing_status: "active" | "sold" | "expired"
+      order_status:
+        | "pending"
+        | "accepted"
+        | "picked_up"
+        | "delivered"
+        | "cancelled"
+      user_role: "farmer" | "buyer" | "delivery"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +293,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      listing_status: ["active", "sold", "expired"],
+      order_status: [
+        "pending",
+        "accepted",
+        "picked_up",
+        "delivered",
+        "cancelled",
+      ],
+      user_role: ["farmer", "buyer", "delivery"],
+    },
   },
 } as const
