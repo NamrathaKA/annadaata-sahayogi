@@ -141,6 +141,23 @@ const en: Dict = {
   buyer_intro: "Buy fresh produce directly from farmers.",
   delivery_intro: "Accept nearby delivery jobs.",
   select_role_signup: "Select a role to sign up",
+  voice_fill: "Fill by voice",
+  voice_press_hold: "Press and hold to speak",
+  voice_no_value: "Didn't catch that, try again",
+  voice_too_short: "Too short",
+  voice_mic_denied: "Microphone permission required",
+  use_my_location: "Use my location",
+  gps_unavailable: "GPS unavailable",
+  gps_denied: "Location permission denied",
+  address_placeholder: "Village, taluk, district",
+  pickup_location: "Pickup location",
+  farmer_contact: "Farmer contact",
+  buyer_contact: "Buyer contact",
+  open_in_maps: "Open in Maps",
+  call: "Call",
+  say_your_name: "Say your name",
+  say_your_phone: "Say your phone number",
+  say_your_email: "Say your email",
 };
 
 const hi: Dict = {
