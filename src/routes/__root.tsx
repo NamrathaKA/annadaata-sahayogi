@@ -87,6 +87,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "AI-powered Kannada-first marketplace connecting Indian farmers directly to buyers and delivery partners." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "FarmPido — Farmer-to-Buyer Marketplace" },
+      { name: "twitter:description", content: "AI-powered Kannada-first marketplace connecting Indian farmers directly to buyers and delivery partners." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0a966a62-8c8f-4bc2-bc4e-5f79ff8c49ae/id-preview-b14b64d3--09e88787-5d10-473f-8de0-8feb9b82fb1b.lovable.app-1784443044358.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0a966a62-8c8f-4bc2-bc4e-5f79ff8c49ae/id-preview-b14b64d3--09e88787-5d10-473f-8de0-8feb9b82fb1b.lovable.app-1784443044358.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
