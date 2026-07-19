@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LANG_NAMES, type Lang } from "@/lib/i18n";
 import { Leaf } from "lucide-react";
 import type { Role } from "@/hooks/use-auth";
+import { VoiceInput } from "@/components/voice-input";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -138,15 +139,27 @@ function SignUpForm() {
       </div>
       <div>
         <Label htmlFor="n">{t("full_name")}</Label>
-        <Input id="n" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
+        <p className="mb-1 text-xs text-muted-foreground">{t("say_your_name")}</p>
+        <div className="flex gap-2">
+          <Input id="n" required value={fullName} onChange={(e) => setFullName(e.target.value)} className="flex-1" />
+          <VoiceInput field="name" onValue={setFullName} ariaLabel={t("say_your_name")} />
+        </div>
       </div>
       <div>
         <Label htmlFor="ph">{t("phone")}</Label>
-        <Input id="ph" value={phone} onChange={(e) => setPhone(e.target.value)} />
+        <p className="mb-1 text-xs text-muted-foreground">{t("say_your_phone")}</p>
+        <div className="flex gap-2">
+          <Input id="ph" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="flex-1" />
+          <VoiceInput field="phone" onValue={setPhone} ariaLabel={t("say_your_phone")} />
+        </div>
       </div>
       <div>
         <Label htmlFor="e2">{t("email")}</Label>
-        <Input id="e2" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+        <p className="mb-1 text-xs text-muted-foreground">{t("say_your_email")}</p>
+        <div className="flex gap-2">
+          <Input id="e2" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="flex-1" />
+          <VoiceInput field="email" onValue={setEmail} ariaLabel={t("say_your_email")} />
+        </div>
       </div>
       <div>
         <Label htmlFor="p2">{t("password")}</Label>

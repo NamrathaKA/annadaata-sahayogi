@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { VoiceInput } from "@/components/voice-input";
+import { LocationPicker, type LocationValue } from "@/components/location-picker";
 
 export const Route = createFileRoute("/app/buyer")({
   component: BuyerDash,
@@ -112,7 +114,7 @@ function OrderDialog({ listing, buyerId, defaultAddress, defaultPhone, onClose, 
 }) {
   const { t } = useI18n();
   const [qty, setQty] = useState("1");
-  const [addr, setAddr] = useState(defaultAddress);
+  const [loc, setLoc] = useState<LocationValue>({ address: defaultAddress, lat: null, lng: null });
   const [phone, setPhone] = useState(defaultPhone);
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
@@ -126,7 +128,9 @@ function OrderDialog({ listing, buyerId, defaultAddress, defaultPhone, onClose, 
       farmer_id: listing.farmer_id,
       quantity: Number(qty),
       total_price: total,
-      delivery_address: addr,
+      delivery_address: loc.address,
+      delivery_lat: loc.lat,
+      delivery_lng: loc.lng,
       buyer_phone: phone,
       notes: notes || null,
     });
@@ -135,18 +139,28 @@ function OrderDialog({ listing, buyerId, defaultAddress, defaultPhone, onClose, 
     else { toast.success("Order placed"); onDone(); }
   };
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <Card className="w-full max-w-md p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 p-4">
+      <Card className="my-8 w-full max-w-md p-6">
         <h3 className="mb-1 font-semibold">{listing.crop_name}</h3>
         <p className="mb-4 text-sm text-muted-foreground">
           ₹{listing.price_per_unit}/{listing.unit} · {listing.quantity} available
         </p>
         <form onSubmit={submit} className="space-y-3">
-          <div><Label>{t("quantity")} ({listing.unit})</Label>
-            <Input type="number" min="1" max={listing.quantity} required value={qty} onChange={(e) => setQty(e.target.value)} />
+          <div>
+            <Label>{t("quantity")} ({listing.unit})</Label>
+            <div className="flex gap-2">
+              <Input type="number" min="1" max={listing.quantity} required value={qty} onChange={(e) => setQty(e.target.value)} className="flex-1" />
+              <VoiceInput field="number" onValue={setQty} />
+            </div>
           </div>
-          <div><Label>{t("delivery_address")}</Label><Textarea required value={addr} onChange={(e) => setAddr(e.target.value)} /></div>
-          <div><Label>{t("phone")}</Label><Input value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
+          <LocationPicker label={t("delivery_address")} value={loc} onChange={setLoc} multiline />
+          <div>
+            <Label>{t("phone")}</Label>
+            <div className="flex gap-2">
+              <Input inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="flex-1" />
+              <VoiceInput field="phone" onValue={setPhone} />
+            </div>
+          </div>
           <div className="rounded-lg bg-muted p-3 text-sm font-medium">{t("total")}: ₹{total.toFixed(2)}</div>
           <div className="flex gap-2">
             <Button type="submit" disabled={busy || total <= 0} className="flex-1">{t("place_order")}</Button>

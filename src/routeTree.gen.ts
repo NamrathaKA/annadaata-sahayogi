@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppFarmerRouteImport } from './routes/app.farmer'
 import { Route as AppDeliveryRouteImport } from './routes/app.delivery'
 import { Route as AppBuyerRouteImport } from './routes/app.buyer'
+import { Route as ApiVoiceFillRouteImport } from './routes/api/voice-fill'
 import { Route as ApiVoiceRouteImport } from './routes/api/voice'
 
 const AuthRoute = AuthRouteImport.update({
@@ -47,6 +48,11 @@ const AppBuyerRoute = AppBuyerRouteImport.update({
   path: '/buyer',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiVoiceFillRoute = ApiVoiceFillRouteImport.update({
+  id: '/api/voice-fill',
+  path: '/api/voice-fill',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiVoiceRoute = ApiVoiceRouteImport.update({
   id: '/api/voice',
   path: '/api/voice',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/api/voice': typeof ApiVoiceRoute
+  '/api/voice-fill': typeof ApiVoiceFillRoute
   '/app/buyer': typeof AppBuyerRoute
   '/app/delivery': typeof AppDeliveryRoute
   '/app/farmer': typeof AppFarmerRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/api/voice': typeof ApiVoiceRoute
+  '/api/voice-fill': typeof ApiVoiceFillRoute
   '/app/buyer': typeof AppBuyerRoute
   '/app/delivery': typeof AppDeliveryRoute
   '/app/farmer': typeof AppFarmerRoute
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/api/voice': typeof ApiVoiceRoute
+  '/api/voice-fill': typeof ApiVoiceFillRoute
   '/app/buyer': typeof AppBuyerRoute
   '/app/delivery': typeof AppDeliveryRoute
   '/app/farmer': typeof AppFarmerRoute
@@ -88,6 +97,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/api/voice'
+    | '/api/voice-fill'
     | '/app/buyer'
     | '/app/delivery'
     | '/app/farmer'
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/api/voice'
+    | '/api/voice-fill'
     | '/app/buyer'
     | '/app/delivery'
     | '/app/farmer'
@@ -106,6 +117,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/api/voice'
+    | '/api/voice-fill'
     | '/app/buyer'
     | '/app/delivery'
     | '/app/farmer'
@@ -116,6 +128,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
   ApiVoiceRoute: typeof ApiVoiceRoute
+  ApiVoiceFillRoute: typeof ApiVoiceFillRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -162,6 +175,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBuyerRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/voice-fill': {
+      id: '/api/voice-fill'
+      path: '/api/voice-fill'
+      fullPath: '/api/voice-fill'
+      preLoaderRoute: typeof ApiVoiceFillRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/voice': {
       id: '/api/voice'
       path: '/api/voice'
@@ -191,6 +211,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
   ApiVoiceRoute: ApiVoiceRoute,
+  ApiVoiceFillRoute: ApiVoiceFillRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
