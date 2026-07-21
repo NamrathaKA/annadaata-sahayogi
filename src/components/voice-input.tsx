@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Mic, Loader2, Check } from "lucide-react";
 import { useI18n } from "@/hooks/use-i18n";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 type Field = "phone" | "name" | "email" | "text" | "number" | "address";
 
