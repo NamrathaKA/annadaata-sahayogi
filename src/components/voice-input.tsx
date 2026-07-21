@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Mic, Loader2, Check } from "lucide-react";
 import { useI18n } from "@/hooks/use-i18n";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 type Field = "phone" | "name" | "email" | "text" | "number" | "address";
 
@@ -98,9 +99,12 @@ export function VoiceInput({ field, onValue, ariaLabel }: {
       const wav = await encodeWav(chunks, rate);
       if (wav.size < 2048) { toast.error(t("voice_too_short")); setState("idle"); return; }
       const b64 = await blobToBase64(wav);
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess.session?.access_token;
+      if (!token) { toast.error(t("voice_no_value")); setState("idle"); return; }
       const res = await fetch("/api/voice-fill", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ audio_base64: b64, mime: "audio/wav", language: lang, field }),
       });
       const data = (await res.json()) as { value?: string; error?: string };
