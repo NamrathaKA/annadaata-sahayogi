@@ -80,10 +80,11 @@ function DeliveryDash() {
   const load = async () => {
     if (!user) return;
     const [{ data: a }, { data: m }] = await Promise.all([
-      supabase.from("orders").select("*").is("delivery_id", null).in("status", ["pending", "accepted"]).order("created_at", { ascending: false }),
+      (supabase.from as unknown as (name: string) => ReturnType<typeof supabase.from>)("available_delivery_jobs")
+        .select("*").order("created_at", { ascending: false }),
       supabase.from("orders").select("*").eq("delivery_id", user.id).order("created_at", { ascending: false }),
     ]);
-    setAvailable((a as Order[]) ?? []);
+    setAvailable(((a as unknown as Order[]) ?? []).map((o) => ({ ...o, buyer_phone: null, farmer_phone: null })));
     setMine((m as Order[]) ?? []);
   };
   useEffect(() => { load(); }, [user]);
