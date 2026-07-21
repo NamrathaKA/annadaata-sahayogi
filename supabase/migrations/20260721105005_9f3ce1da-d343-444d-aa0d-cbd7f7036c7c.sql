@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.is_delivery_user(uuid) TO authenticated;
