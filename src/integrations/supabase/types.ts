@@ -177,7 +177,65 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      available_delivery_jobs: {
+        Row: {
+          buyer_id: string | null
+          created_at: string | null
+          delivery_address: string | null
+          delivery_lat: number | null
+          delivery_lng: number | null
+          farmer_id: string | null
+          id: string | null
+          listing_id: string | null
+          pickup_address: string | null
+          pickup_lat: number | null
+          pickup_lng: number | null
+          quantity: number | null
+          status: Database["public"]["Enums"]["order_status"] | null
+          total_price: number | null
+        }
+        Insert: {
+          buyer_id?: string | null
+          created_at?: string | null
+          delivery_address?: string | null
+          delivery_lat?: number | null
+          delivery_lng?: number | null
+          farmer_id?: string | null
+          id?: string | null
+          listing_id?: string | null
+          pickup_address?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          quantity?: number | null
+          status?: Database["public"]["Enums"]["order_status"] | null
+          total_price?: number | null
+        }
+        Update: {
+          buyer_id?: string | null
+          created_at?: string | null
+          delivery_address?: string | null
+          delivery_lat?: number | null
+          delivery_lng?: number | null
+          farmer_id?: string | null
+          id?: string | null
+          listing_id?: string | null
+          pickup_address?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          quantity?: number | null
+          status?: Database["public"]["Enums"]["order_status"] | null
+          total_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "crop_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       [_ in never]: never
