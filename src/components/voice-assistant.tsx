@@ -106,9 +106,12 @@ export function VoiceAssistant() {
       const wav = await encodeWav(chunks, rate);
       if (wav.size < 2048) { toast.error("Recording too short"); return; }
       const b64 = await blobToBase64(wav);
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess.session?.access_token;
+      if (!token) { toast.error("Please sign in to use voice"); return; }
       const res = await fetch("/api/voice", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ audio_base64: b64, mime: "audio/wav", language: lang }),
       });
       const data = (await res.json()) as { transcript?: string; reply?: string; audio_base64?: string; mime?: string; error?: string };
