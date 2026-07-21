@@ -26,10 +26,29 @@ function b64ToBytes(b64: string): Uint8Array {
   return out;
 }
 
+const MAX_AUDIO_B64 = 2_500_000;
+
+async function requireUser(request: Request): Promise<Response | null> {
+  const auth = request.headers.get("authorization") ?? request.headers.get("Authorization");
+  const token = auth?.toLowerCase().startsWith("bearer ") ? auth.slice(7).trim() : "";
+  if (!token) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !key) return Response.json({ error: "server misconfigured" }, { status: 500 });
+  const res = await fetch(`${url}/auth/v1/user`, {
+    headers: { apikey: key, Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return Response.json({ error: "unauthorized" }, { status: 401 });
+  return null;
+}
+
 export const Route = createFileRoute("/api/voice-fill")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const unauthorized = await requireUser(request);
+        if (unauthorized) return unauthorized;
+
         const key = process.env.LOVABLE_API_KEY;
         if (!key) return Response.json({ error: "LOVABLE_API_KEY missing" }, { status: 500 });
 
@@ -39,6 +58,7 @@ export const Route = createFileRoute("/api/voice-fill")({
         const field: Field = (body.field && FIELD_INSTRUCTION[body.field] ? body.field : "text");
         const language = body.language && LANG_LABEL[body.language] ? body.language : "en";
         if (!body.audio_base64) return Response.json({ error: "missing audio" }, { status: 400 });
+        if (body.audio_base64.length > MAX_AUDIO_B64) return Response.json({ error: "audio too large" }, { status: 413 });
 
         const mime = body.mime || "audio/wav";
         const ext = mime.includes("wav") ? "wav" : mime.includes("mp4") ? "mp4" : "webm";
