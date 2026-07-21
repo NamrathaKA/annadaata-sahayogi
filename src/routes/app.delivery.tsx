@@ -89,7 +89,7 @@ function DeliveryDash() {
   useEffect(() => { load(); }, [user]);
 
   const takeJob = async (id: string) => {
-    const { error } = await supabase.from("orders").update({ delivery_id: user!.id }).eq("id", id);
+    const { error } = await supabase.from("orders").update({ delivery_id: user!.id, status: "accepted" }).eq("id", id);
     if (error) toast.error(error.message);
     else { toast.success("Job accepted"); load(); }
   };
