@@ -117,6 +117,7 @@ const en: Dict = {
   save: "Save",
   cancel: "Cancel",
   browse_crops: "Browse crops",
+  search_crops: "Search crops (name or location)",
   my_orders: "My orders",
   available_jobs: "Available jobs",
   my_jobs: "My jobs",
