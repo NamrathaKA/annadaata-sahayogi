@@ -31,6 +31,7 @@ function BuyerDash() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordering, setOrdering] = useState<Listing | null>(null);
+  const [search, setSearch] = useState("");
 
   const load = async () => {
     if (!user) return;
@@ -42,6 +43,15 @@ function BuyerDash() {
     setOrders((o as Order[]) ?? []);
   };
   useEffect(() => { load(); }, [user]);
+
+  const q = search.trim().toLowerCase();
+  const filteredListings = q
+    ? listings.filter((l) =>
+        l.crop_name.toLowerCase().includes(q) ||
+        l.location.toLowerCase().includes(q) ||
+        (l.description ?? "").toLowerCase().includes(q),
+      )
+    : listings;
 
   return (
     <div className="space-y-6">
