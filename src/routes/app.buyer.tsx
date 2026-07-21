@@ -62,13 +62,22 @@ function BuyerDash() {
 
       <section>
         <h2 className="mb-3 text-lg font-semibold">{t("browse_crops")}</h2>
-        {listings.length === 0 ? (
+        <div className="mb-3 flex gap-2">
+          <Input
+            placeholder={t("search_crops")}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex-1"
+          />
+          <VoiceInput field="name" onValue={setSearch} />
+        </div>
+        {filteredListings.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t("no_listings")}</p>
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
-            {listings.map((l) => (
+            {filteredListings.map((l) => (
               <Card key={l.id} className="p-4">
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-2">
                   <div>
                     <h3 className="font-semibold">{l.crop_name}</h3>
                     <p className="text-sm text-muted-foreground">
