@@ -42,6 +42,7 @@ const kn: Dict = {
   save: "ಉಳಿಸಿ",
   cancel: "ರದ್ದುಗೊಳಿಸಿ",
   browse_crops: "ಬೆಳೆಗಳನ್ನು ವೀಕ್ಷಿಸಿ",
+  search_crops: "ಬೆಳೆ ಹುಡುಕಿ (ಹೆಸರು ಅಥವಾ ಸ್ಥಳ)",
   my_orders: "ನನ್ನ ಆದೇಶಗಳು",
   available_jobs: "ಲಭ್ಯವಿರುವ ಕೆಲಸಗಳು",
   my_jobs: "ನನ್ನ ಕೆಲಸಗಳು",
