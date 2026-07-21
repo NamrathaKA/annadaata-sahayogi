@@ -192,6 +192,7 @@ const hi: Dict = {
   save: "सहेजें",
   cancel: "रद्द करें",
   browse_crops: "फसलें देखें",
+  search_crops: "फसल खोजें (नाम या स्थान)",
   my_orders: "मेरे ऑर्डर",
   available_jobs: "उपलब्ध काम",
   my_jobs: "मेरे काम",
