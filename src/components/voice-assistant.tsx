@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Mic, Loader2, Volume2, X } from "lucide-react";
 import { useI18n } from "@/hooks/use-i18n";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 async function encodeWav(chunks: Float32Array[], sampleRate: number): Promise<Blob> {
   const totalLen = chunks.reduce((a, c) => a + c.length, 0);
