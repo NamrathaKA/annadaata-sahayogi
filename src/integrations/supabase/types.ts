@@ -180,7 +180,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      is_delivery_user: { Args: { _uid: string }; Returns: boolean }
+      [_ in never]: never
     }
     Enums: {
       listing_status: "active" | "sold" | "expired"
