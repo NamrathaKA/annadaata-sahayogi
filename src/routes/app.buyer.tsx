@@ -31,6 +31,7 @@ function BuyerDash() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordering, setOrdering] = useState<Listing | null>(null);
+  const [search, setSearch] = useState("");
 
   const load = async () => {
     if (!user) return;
@@ -43,6 +44,15 @@ function BuyerDash() {
   };
   useEffect(() => { load(); }, [user]);
 
+  const q = search.trim().toLowerCase();
+  const filteredListings = q
+    ? listings.filter((l) =>
+        l.crop_name.toLowerCase().includes(q) ||
+        l.location.toLowerCase().includes(q) ||
+        (l.description ?? "").toLowerCase().includes(q),
+      )
+    : listings;
+
   return (
     <div className="space-y-6">
       <div>
@@ -52,13 +62,22 @@ function BuyerDash() {
 
       <section>
         <h2 className="mb-3 text-lg font-semibold">{t("browse_crops")}</h2>
-        {listings.length === 0 ? (
+        <div className="mb-3 flex gap-2">
+          <Input
+            placeholder={t("search_crops")}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex-1"
+          />
+          <VoiceInput field="name" onValue={setSearch} />
+        </div>
+        {filteredListings.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t("no_listings")}</p>
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
-            {listings.map((l) => (
+            {filteredListings.map((l) => (
               <Card key={l.id} className="p-4">
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-2">
                   <div>
                     <h3 className="font-semibold">{l.crop_name}</h3>
                     <p className="text-sm text-muted-foreground">
