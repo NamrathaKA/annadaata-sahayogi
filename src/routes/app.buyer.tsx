@@ -153,6 +153,9 @@ function OrderDialog({ listing, buyerId, defaultAddress, defaultPhone, onClose, 
       buyer_phone: phone,
       notes: notes || null,
     });
+    if (!error) {
+      await supabase.from("crop_listings").update({ status: "sold" }).eq("id", listing.id);
+    }
     setBusy(false);
     if (error) toast.error(error.message);
     else { toast.success("Order placed"); onDone(); }
