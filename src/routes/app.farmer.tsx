@@ -95,7 +95,15 @@ function FarmerDash() {
                     <Badge>{l.status}</Badge>
                     <button
                       onClick={async () => {
-                        await supabase.from("crop_listings").delete().eq("id", l.id);
+                        if (!confirm("Delete this listing?")) return;
+                        const { error } = await supabase.from("crop_listings").delete().eq("id", l.id);
+                        if (error) {
+                          const { error: upErr } = await supabase.from("crop_listings").update({ status: "expired" }).eq("id", l.id);
+                          if (upErr) toast.error(upErr.message);
+                          else toast.success("Listing removed");
+                        } else {
+                          toast.success("Deleted");
+                        }
                         load();
                       }}
                       className="text-muted-foreground hover:text-destructive"
