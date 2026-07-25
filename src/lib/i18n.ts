@@ -253,6 +253,15 @@ const hi: Dict = {
   say_your_name: "अपना नाम बोलें",
   say_your_phone: "अपना फोन नंबर बोलें",
   say_your_email: "अपना ईमेल बोलें",
+  ai_suggest_price: "AI मूल्य सुझाव",
+  ai_thinking: "AI सोच रहा है…",
+  ai_use_price: "यही मूल्य लें",
+  ai_seasonal_title: "इस मौसम की टॉप फसलें (AI)",
+  ai_seasonal_hint: "बाज़ार माँग के अनुसार फसल उगाएँ",
+  ai_load_seasonal: "सुझाव दिखाएँ",
+  schedule_pickup: "पिकअप तारीख तय करें",
+  scheduled_for: "निर्धारित",
+  save_schedule: "सहेजें",
 };
 
 const DICTS: Record<Lang, Dict> = { kn, en, hi, ta: kn, te: kn };
