@@ -42,7 +42,7 @@ interface Order {
 
 function FarmerDash() {
   const { user, profile } = useAuth();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [listings, setListings] = useState<Listing[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [showAdd, setShowAdd] = useState(false);
