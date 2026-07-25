@@ -169,6 +169,15 @@ const en: Dict = {
   say_your_name: "Say your name",
   say_your_phone: "Say your phone number",
   say_your_email: "Say your email",
+  ai_suggest_price: "AI price suggestion",
+  ai_thinking: "AI thinking…",
+  ai_use_price: "Use this price",
+  ai_seasonal_title: "Top crops this season (AI)",
+  ai_seasonal_hint: "Grow crops that match current market demand",
+  ai_load_seasonal: "Show suggestions",
+  schedule_pickup: "Schedule pickup date",
+  scheduled_for: "Scheduled",
+  save_schedule: "Save",
 };
 
 const hi: Dict = {
