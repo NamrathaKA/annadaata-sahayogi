@@ -65,6 +65,8 @@ function FarmerDash() {
         <p className="text-sm text-muted-foreground">{t("farmer_intro")}</p>
       </div>
 
+      <SeasonalCropsPanel lang={lang} location={profile?.location ?? ""} />
+
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold">{t("my_listings")}</h2>
@@ -76,6 +78,7 @@ function FarmerDash() {
           <AddListing
             farmerId={user!.id}
             defaultLocation={profile?.location ?? ""}
+            lang={lang}
             onDone={() => { setShowAdd(false); load(); }}
           />
         )}
