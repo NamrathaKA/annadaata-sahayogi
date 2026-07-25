@@ -7,7 +7,25 @@ import { useI18n } from "@/hooks/use-i18n";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { MapPin, Phone, Navigation } from "lucide-react";
+
+function toLocalInput(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function ScheduleInput({ initial, onSave, saveLabel }: { initial: string | null; onSave: (v: string) => void; saveLabel: string }) {
+  const [v, setV] = useState<string>(toLocalInput(initial));
+  return (
+    <div className="flex flex-wrap gap-2">
+      <Input type="datetime-local" value={v} onChange={(e) => setV(e.target.value)} className="max-w-[220px]" />
+      <Button type="button" size="sm" onClick={() => onSave(v)} disabled={!v}>{saveLabel}</Button>
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/app/delivery")({
   component: DeliveryDash,
@@ -20,6 +38,7 @@ interface Order {
   pickup_address: string | null; pickup_lat: number | null; pickup_lng: number | null;
   delivery_lat: number | null; delivery_lng: number | null;
   farmer_phone: string | null;
+  scheduled_pickup_at: string | null;
   created_at: string;
 }
 
@@ -99,6 +118,12 @@ function DeliveryDash() {
     if (error) toast.error(error.message);
     else { toast.success(t(to)); load(); }
   };
+  const saveSchedule = async (id: string, value: string) => {
+    const iso = value ? new Date(value).toISOString() : null;
+    const { error } = await supabase.from("orders").update({ scheduled_pickup_at: iso }).eq("id", id);
+    if (error) toast.error(error.message);
+    else { toast.success(t("save_schedule")); load(); }
+  };
 
   const renderOrder = (o: Order, mineJob: boolean) => (
     <Card key={o.id} className="space-y-3 p-4">
@@ -108,6 +133,11 @@ function DeliveryDash() {
           <div className="text-xs text-muted-foreground">
             {new Date(o.created_at).toLocaleString()}
           </div>
+          {o.scheduled_pickup_at && (
+            <div className="text-xs font-medium text-primary">
+              {t("scheduled_for")}: {new Date(o.scheduled_pickup_at).toLocaleString()}
+            </div>
+          )}
         </div>
         <Badge>{t(o.status)}</Badge>
       </div>
@@ -129,6 +159,19 @@ function DeliveryDash() {
         t={t}
       />
 
+      {mineJob && (o.status === "accepted" || o.status === "picked_up") && (
+        <div className="rounded-md border bg-muted/30 p-2">
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            {t("schedule_pickup")}
+          </label>
+          <ScheduleInput
+            initial={o.scheduled_pickup_at}
+            onSave={(v) => saveSchedule(o.id, v)}
+            saveLabel={t("save_schedule")}
+          />
+        </div>
+      )}
+
       <div className="flex flex-wrap gap-2 pt-1">
         {!mineJob && <Button size="sm" onClick={() => takeJob(o.id)}>{t("accept")}</Button>}
         {mineJob && o.status === "accepted" && <Button size="sm" onClick={() => advance(o.id, "picked_up")}>{t("mark_picked_up")}</Button>}
@@ -136,6 +179,8 @@ function DeliveryDash() {
       </div>
     </Card>
   );
+
+
 
   return (
     <div className="space-y-6">

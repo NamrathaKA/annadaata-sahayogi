@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2 } from "lucide-react";
 import { VoiceInput } from "@/components/voice-input";
 import { LocationPicker, type LocationValue } from "@/components/location-picker";
+import { Sparkles, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/app/farmer")({
   component: FarmerDash,
@@ -41,7 +42,7 @@ interface Order {
 
 function FarmerDash() {
   const { user, profile } = useAuth();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [listings, setListings] = useState<Listing[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [showAdd, setShowAdd] = useState(false);
@@ -64,6 +65,8 @@ function FarmerDash() {
         <p className="text-sm text-muted-foreground">{t("farmer_intro")}</p>
       </div>
 
+      <SeasonalCropsPanel lang={lang} location={profile?.location ?? ""} />
+
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold">{t("my_listings")}</h2>
@@ -75,6 +78,7 @@ function FarmerDash() {
           <AddListing
             farmerId={user!.id}
             defaultLocation={profile?.location ?? ""}
+            lang={lang}
             onDone={() => { setShowAdd(false); load(); }}
           />
         )}
@@ -157,7 +161,7 @@ function FarmerDash() {
   );
 }
 
-function AddListing({ farmerId, defaultLocation, onDone }: { farmerId: string; defaultLocation: string; onDone: () => void }) {
+function AddListing({ farmerId, defaultLocation, lang, onDone }: { farmerId: string; defaultLocation: string; lang: string; onDone: () => void }) {
   const { t } = useI18n();
   const [f, setF] = useState({
     crop_name: "", quantity: "10", unit: "kg", price_per_unit: "20",
@@ -165,6 +169,30 @@ function AddListing({ farmerId, defaultLocation, onDone }: { farmerId: string; d
   });
   const [loc, setLoc] = useState<LocationValue>({ address: defaultLocation, lat: null, lng: null });
   const [busy, setBusy] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiPrice, setAiPrice] = useState<{ min: number; max: number; suggested: number; note: string } | null>(null);
+
+  const suggestPrice = async () => {
+    if (!f.crop_name.trim()) { toast.error(t("crop_name")); return; }
+    setAiBusy(true); setAiPrice(null);
+    try {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess.session?.access_token;
+      const res = await fetch("/api/crop-ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token ?? ""}` },
+        body: JSON.stringify({ action: "price", crop_name: f.crop_name, unit: f.unit, location: loc.address || defaultLocation, language: lang }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error || "AI failed");
+      setAiPrice(j);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setAiBusy(false);
+    }
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
@@ -205,10 +233,29 @@ function AddListing({ farmerId, defaultLocation, onDone }: { farmerId: string; d
             <option value="kg">kg</option><option value="quintal">quintal</option><option value="ton">ton</option><option value="pieces">pieces</option>
           </select>
         </div>
-        <div><Label>{t("price_per_unit")}</Label>
+        <div>
+          <Label>{t("price_per_unit")}</Label>
           <div className="flex gap-2">
             <Input type="number" min="0" step="0.01" required value={f.price_per_unit} onChange={(e) => setF({ ...f, price_per_unit: e.target.value })} className="flex-1" />
             <VoiceInput field="number" onValue={(v) => setF({ ...f, price_per_unit: v })} />
+          </div>
+          <div className="mt-2">
+            <Button type="button" size="sm" variant="secondary" onClick={suggestPrice} disabled={aiBusy}>
+              {aiBusy ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <Sparkles className="mr-1 h-3.5 w-3.5" />}
+              {aiBusy ? t("ai_thinking") : t("ai_suggest_price")}
+            </Button>
+            {aiPrice && (
+              <div className="mt-2 rounded-md border bg-primary/5 p-2 text-xs">
+                <div className="font-medium">
+                  ₹{aiPrice.min}–₹{aiPrice.max} / {f.unit} · <span className="text-primary">₹{aiPrice.suggested}</span>
+                </div>
+                {aiPrice.note && <div className="mt-0.5 text-muted-foreground">{aiPrice.note}</div>}
+                <Button type="button" size="sm" variant="link" className="h-auto p-0 text-xs"
+                  onClick={() => setF({ ...f, price_per_unit: String(aiPrice.suggested) })}>
+                  {t("ai_use_price")}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
         <div><Label>{t("harvest_date")}</Label><Input type="date" value={f.harvest_date} onChange={(e) => setF({ ...f, harvest_date: e.target.value })} /></div>
@@ -230,3 +277,60 @@ function AddListing({ farmerId, defaultLocation, onDone }: { farmerId: string; d
     </Card>
   );
 }
+
+function SeasonalCropsPanel({ lang, location }: { lang: string; location: string }) {
+  const { t } = useI18n();
+  const [busy, setBusy] = useState(false);
+  const [crops, setCrops] = useState<Array<{ name: string; reason: string; price_range_inr_per_kg: string }> | null>(null);
+
+  const load = async () => {
+    setBusy(true);
+    try {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess.session?.access_token;
+      const res = await fetch("/api/crop-ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token ?? ""}` },
+        body: JSON.stringify({ action: "seasonal", location, language: lang }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error || "AI failed");
+      setCrops(j.crops ?? []);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Card className="p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 className="flex items-center gap-1.5 text-lg font-semibold">
+            <Sparkles className="h-4 w-4 text-primary" /> {t("ai_seasonal_title")}
+          </h2>
+          <p className="text-xs text-muted-foreground">{t("ai_seasonal_hint")}</p>
+        </div>
+        <Button size="sm" variant="secondary" onClick={load} disabled={busy}>
+          {busy ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <Sparkles className="mr-1 h-3.5 w-3.5" />}
+          {busy ? t("ai_thinking") : t("ai_load_seasonal")}
+        </Button>
+      </div>
+      {crops && crops.length > 0 && (
+        <ul className="mt-3 grid gap-2 md:grid-cols-2">
+          {crops.map((c, i) => (
+            <li key={i} className="rounded-md border bg-muted/30 p-2 text-sm">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-semibold">{c.name}</span>
+                <span className="text-xs text-primary">{c.price_range_inr_per_kg}</span>
+              </div>
+              <div className="text-xs text-muted-foreground">{c.reason}</div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
+  );
+}
+

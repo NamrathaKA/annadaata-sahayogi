@@ -85,6 +85,15 @@ const kn: Dict = {
   say_your_name: "ನಿಮ್ಮ ಹೆಸರು ಹೇಳಿ",
   say_your_phone: "ನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆ ಹೇಳಿ",
   say_your_email: "ನಿಮ್ಮ ಇಮೇಲ್ ಹೇಳಿ",
+  ai_suggest_price: "AI ಬೆಲೆ ಸಲಹೆ",
+  ai_thinking: "AI ಆಲೋಚಿಸುತ್ತಿದೆ...",
+  ai_use_price: "ಈ ಬೆಲೆ ಬಳಸಿ",
+  ai_seasonal_title: "ಈ ಋತುವಿನ ಟಾಪ್ ಬೆಳೆಗಳು (AI)",
+  ai_seasonal_hint: "ಮಾರುಕಟ್ಟೆಗೆ ಹೊಂದುವ ಬೆಳೆಗಳನ್ನು ಬೆಳೆಸಿ",
+  ai_load_seasonal: "ಸಲಹೆ ತೋರಿಸಿ",
+  schedule_pickup: "ಎತ್ತಿಕೊಳ್ಳುವ ದಿನಾಂಕ ನಿಗದಿಪಡಿಸಿ",
+  scheduled_for: "ನಿಗದಿತ",
+  save_schedule: "ಉಳಿಸಿ",
 };
 
 const en: Dict = {
@@ -160,6 +169,15 @@ const en: Dict = {
   say_your_name: "Say your name",
   say_your_phone: "Say your phone number",
   say_your_email: "Say your email",
+  ai_suggest_price: "AI price suggestion",
+  ai_thinking: "AI thinking…",
+  ai_use_price: "Use this price",
+  ai_seasonal_title: "Top crops this season (AI)",
+  ai_seasonal_hint: "Grow crops that match current market demand",
+  ai_load_seasonal: "Show suggestions",
+  schedule_pickup: "Schedule pickup date",
+  scheduled_for: "Scheduled",
+  save_schedule: "Save",
 };
 
 const hi: Dict = {
@@ -235,6 +253,15 @@ const hi: Dict = {
   say_your_name: "अपना नाम बोलें",
   say_your_phone: "अपना फोन नंबर बोलें",
   say_your_email: "अपना ईमेल बोलें",
+  ai_suggest_price: "AI मूल्य सुझाव",
+  ai_thinking: "AI सोच रहा है…",
+  ai_use_price: "यही मूल्य लें",
+  ai_seasonal_title: "इस मौसम की टॉप फसलें (AI)",
+  ai_seasonal_hint: "बाज़ार माँग के अनुसार फसल उगाएँ",
+  ai_load_seasonal: "सुझाव दिखाएँ",
+  schedule_pickup: "पिकअप तारीख तय करें",
+  scheduled_for: "निर्धारित",
+  save_schedule: "सहेजें",
 };
 
 const DICTS: Record<Lang, Dict> = { kn, en, hi, ta: kn, te: kn };
