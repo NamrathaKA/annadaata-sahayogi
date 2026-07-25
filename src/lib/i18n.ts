@@ -85,6 +85,15 @@ const kn: Dict = {
   say_your_name: "ನಿಮ್ಮ ಹೆಸರು ಹೇಳಿ",
   say_your_phone: "ನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆ ಹೇಳಿ",
   say_your_email: "ನಿಮ್ಮ ಇಮೇಲ್ ಹೇಳಿ",
+  ai_suggest_price: "AI ಬೆಲೆ ಸಲಹೆ",
+  ai_thinking: "AI ಆಲೋಚಿಸುತ್ತಿದೆ...",
+  ai_use_price: "ಈ ಬೆಲೆ ಬಳಸಿ",
+  ai_seasonal_title: "ಈ ಋತುವಿನ ಟಾಪ್ ಬೆಳೆಗಳು (AI)",
+  ai_seasonal_hint: "ಮಾರುಕಟ್ಟೆಗೆ ಹೊಂದುವ ಬೆಳೆಗಳನ್ನು ಬೆಳೆಸಿ",
+  ai_load_seasonal: "ಸಲಹೆ ತೋರಿಸಿ",
+  schedule_pickup: "ಎತ್ತಿಕೊಳ್ಳುವ ದಿನಾಂಕ ನಿಗದಿಪಡಿಸಿ",
+  scheduled_for: "ನಿಗದಿತ",
+  save_schedule: "ಉಳಿಸಿ",
 };
 
 const en: Dict = {
