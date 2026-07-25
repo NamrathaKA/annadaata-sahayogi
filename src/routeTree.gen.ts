@@ -17,6 +17,7 @@ import { Route as AppDeliveryRouteImport } from './routes/app.delivery'
 import { Route as AppBuyerRouteImport } from './routes/app.buyer'
 import { Route as ApiVoiceFillRouteImport } from './routes/api/voice-fill'
 import { Route as ApiVoiceRouteImport } from './routes/api/voice'
+import { Route as ApiCropAiRouteImport } from './routes/api/crop-ai'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -58,11 +59,17 @@ const ApiVoiceRoute = ApiVoiceRouteImport.update({
   path: '/api/voice',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCropAiRoute = ApiCropAiRouteImport.update({
+  id: '/api/crop-ai',
+  path: '/api/crop-ai',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/api/crop-ai': typeof ApiCropAiRoute
   '/api/voice': typeof ApiVoiceRoute
   '/api/voice-fill': typeof ApiVoiceFillRoute
   '/app/buyer': typeof AppBuyerRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/api/crop-ai': typeof ApiCropAiRoute
   '/api/voice': typeof ApiVoiceRoute
   '/api/voice-fill': typeof ApiVoiceFillRoute
   '/app/buyer': typeof AppBuyerRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/api/crop-ai': typeof ApiCropAiRoute
   '/api/voice': typeof ApiVoiceRoute
   '/api/voice-fill': typeof ApiVoiceFillRoute
   '/app/buyer': typeof AppBuyerRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
+    | '/api/crop-ai'
     | '/api/voice'
     | '/api/voice-fill'
     | '/app/buyer'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
+    | '/api/crop-ai'
     | '/api/voice'
     | '/api/voice-fill'
     | '/app/buyer'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
+    | '/api/crop-ai'
     | '/api/voice'
     | '/api/voice-fill'
     | '/app/buyer'
@@ -127,6 +139,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiCropAiRoute: typeof ApiCropAiRoute
   ApiVoiceRoute: typeof ApiVoiceRoute
   ApiVoiceFillRoute: typeof ApiVoiceFillRoute
 }
@@ -189,6 +202,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiVoiceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/crop-ai': {
+      id: '/api/crop-ai'
+      path: '/api/crop-ai'
+      fullPath: '/api/crop-ai'
+      preLoaderRoute: typeof ApiCropAiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -210,6 +230,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiCropAiRoute: ApiCropAiRoute,
   ApiVoiceRoute: ApiVoiceRoute,
   ApiVoiceFillRoute: ApiVoiceFillRoute,
 }
