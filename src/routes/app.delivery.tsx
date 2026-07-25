@@ -20,6 +20,7 @@ interface Order {
   pickup_address: string | null; pickup_lat: number | null; pickup_lng: number | null;
   delivery_lat: number | null; delivery_lng: number | null;
   farmer_phone: string | null;
+  scheduled_pickup_at: string | null;
   created_at: string;
 }
 
