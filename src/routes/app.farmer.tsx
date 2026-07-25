@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2 } from "lucide-react";
 import { VoiceInput } from "@/components/voice-input";
 import { LocationPicker, type LocationValue } from "@/components/location-picker";
+import { Sparkles, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/app/farmer")({
   component: FarmerDash,
