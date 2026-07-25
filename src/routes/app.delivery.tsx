@@ -7,7 +7,25 @@ import { useI18n } from "@/hooks/use-i18n";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { MapPin, Phone, Navigation } from "lucide-react";
+
+function toLocalInput(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function ScheduleInput({ initial, onSave, saveLabel }: { initial: string | null; onSave: (v: string) => void; saveLabel: string }) {
+  const [v, setV] = useState<string>(toLocalInput(initial));
+  return (
+    <div className="flex flex-wrap gap-2">
+      <Input type="datetime-local" value={v} onChange={(e) => setV(e.target.value)} className="max-w-[220px]" />
+      <Button type="button" size="sm" onClick={() => onSave(v)} disabled={!v}>{saveLabel}</Button>
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/app/delivery")({
   component: DeliveryDash,
