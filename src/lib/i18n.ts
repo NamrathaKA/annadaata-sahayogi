@@ -94,6 +94,11 @@ const kn: Dict = {
   schedule_pickup: "ಎತ್ತಿಕೊಳ್ಳುವ ದಿನಾಂಕ ನಿಗದಿಪಡಿಸಿ",
   scheduled_for: "ನಿಗದಿತ",
   save_schedule: "ಉಳಿಸಿ",
+  confirm_schedule_title: "ಪಿಕಪ್ ಸಮಯವನ್ನು ದೃಢೀಕರಿಸಿ",
+  confirm_schedule_desc: "ಈ ಸಮಯದಲ್ಲಿ ಪಿಕಪ್ ನಿಗದಿಪಡಿಸಲು ನೀವು ಖಚಿತವಾಗಿದ್ದೀರಾ?",
+  confirm: "ದೃಢೀಕರಿಸಿ",
+  err_schedule_past: "ಭವಿಷ್ಯದ ಸಮಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+  err_schedule_status: "ಈ ಆದೇಶದ ಸ್ಥಿತಿಗೆ ಸಮಯ ನಿಗದಿಪಡಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ",
 };
 
 const en: Dict = {
@@ -178,6 +183,11 @@ const en: Dict = {
   schedule_pickup: "Schedule pickup date",
   scheduled_for: "Scheduled",
   save_schedule: "Save",
+  confirm_schedule_title: "Confirm pickup time",
+  confirm_schedule_desc: "Are you sure you want to schedule pickup at this time?",
+  confirm: "Confirm",
+  err_schedule_past: "Please choose a future time",
+  err_schedule_status: "Cannot schedule pickup for this order status",
 };
 
 const hi: Dict = {
@@ -262,6 +272,11 @@ const hi: Dict = {
   schedule_pickup: "पिकअप तारीख तय करें",
   scheduled_for: "निर्धारित",
   save_schedule: "सहेजें",
+  confirm_schedule_title: "पिकअप समय की पुष्टि करें",
+  confirm_schedule_desc: "क्या आप इस समय पिकअप शेड्यूल करना चाहते हैं?",
+  confirm: "पुष्टि करें",
+  err_schedule_past: "कृपया भविष्य का समय चुनें",
+  err_schedule_status: "इस ऑर्डर स्थिति के लिए शेड्यूल संभव नहीं",
 };
 
 const DICTS: Record<Lang, Dict> = { kn, en, hi, ta: kn, te: kn };

@@ -8,7 +8,20 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { MapPin, Phone, Navigation } from "lucide-react";
+
+// Only these order statuses can have a pickup time scheduled.
+const SCHEDULABLE_STATUSES = new Set(["pending", "accepted"]);
 
 function toLocalInput(iso: string | null): string {
   if (!iso) return "";
@@ -17,12 +30,53 @@ function toLocalInput(iso: string | null): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-function ScheduleInput({ initial, onSave, saveLabel }: { initial: string | null; onSave: (v: string) => void; saveLabel: string }) {
+function nowLocalInput(): string {
+  return toLocalInput(new Date().toISOString());
+}
+
+function ScheduleInput({
+  initial,
+  status,
+  onRequestSave,
+  saveLabel,
+  t,
+}: {
+  initial: string | null;
+  status: string;
+  onRequestSave: (v: string) => void;
+  saveLabel: string;
+  t: (k: string) => string;
+}) {
   const [v, setV] = useState<string>(toLocalInput(initial));
+  const min = nowLocalInput();
+  const disabled = !SCHEDULABLE_STATUSES.has(status);
+
+  const handleClick = () => {
+    if (disabled) {
+      toast.error(t("err_schedule_status"));
+      return;
+    }
+    if (!v) return;
+    if (new Date(v).getTime() <= Date.now()) {
+      toast.error(t("err_schedule_past"));
+      return;
+    }
+    onRequestSave(v);
+  };
+
   return (
     <div className="flex flex-wrap gap-2">
-      <Input type="datetime-local" value={v} onChange={(e) => setV(e.target.value)} className="max-w-[220px]" />
-      <Button type="button" size="sm" onClick={() => onSave(v)} disabled={!v}>{saveLabel}</Button>
+      <Input
+        type="datetime-local"
+        value={v}
+        min={min}
+        disabled={disabled}
+        onChange={(e) => setV(e.target.value)}
+        className="max-w-[220px]"
+      />
+      <Button type="button" size="sm" onClick={handleClick} disabled={!v || disabled}>
+        {saveLabel}
+      </Button>
     </div>
   );
 }
@@ -95,6 +149,7 @@ function DeliveryDash() {
   const { t } = useI18n();
   const [available, setAvailable] = useState<Order[]>([]);
   const [mine, setMine] = useState<Order[]>([]);
+  const [pendingSchedule, setPendingSchedule] = useState<{ order: Order; value: string } | null>(null);
 
   const load = async () => {
     if (!user) return;
@@ -118,11 +173,27 @@ function DeliveryDash() {
     if (error) toast.error(error.message);
     else { toast.success(t(to)); load(); }
   };
-  const saveSchedule = async (id: string, value: string) => {
-    const iso = value ? new Date(value).toISOString() : null;
-    const { error } = await supabase.from("orders").update({ scheduled_pickup_at: iso }).eq("id", id);
+  const confirmSchedule = async () => {
+    if (!pendingSchedule) return;
+    const { order, value } = pendingSchedule;
+    // Re-fetch latest status to guard against race conditions with farmer/buyer/other updates.
+    const { data: fresh } = await supabase.from("orders").select("status").eq("id", order.id).maybeSingle();
+    if (!fresh || !SCHEDULABLE_STATUSES.has(fresh.status)) {
+      toast.error(t("err_schedule_status"));
+      setPendingSchedule(null);
+      load();
+      return;
+    }
+    if (new Date(value).getTime() <= Date.now()) {
+      toast.error(t("err_schedule_past"));
+      setPendingSchedule(null);
+      return;
+    }
+    const iso = new Date(value).toISOString();
+    const { error } = await supabase.from("orders").update({ scheduled_pickup_at: iso }).eq("id", order.id);
     if (error) toast.error(error.message);
     else { toast.success(t("save_schedule")); load(); }
+    setPendingSchedule(null);
   };
 
   const renderOrder = (o: Order, mineJob: boolean) => (
@@ -159,15 +230,17 @@ function DeliveryDash() {
         t={t}
       />
 
-      {mineJob && (o.status === "accepted" || o.status === "picked_up") && (
+      {mineJob && SCHEDULABLE_STATUSES.has(o.status) && (
         <div className="rounded-md border bg-muted/30 p-2">
           <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {t("schedule_pickup")}
           </label>
           <ScheduleInput
             initial={o.scheduled_pickup_at}
-            onSave={(v) => saveSchedule(o.id, v)}
+            status={o.status}
+            onRequestSave={(v) => setPendingSchedule({ order: o, value: v })}
             saveLabel={t("save_schedule")}
+            t={t}
           />
         </div>
       )}
@@ -179,6 +252,7 @@ function DeliveryDash() {
       </div>
     </Card>
   );
+
 
 
 
@@ -210,6 +284,26 @@ function DeliveryDash() {
           </div>
         )}
       </section>
+
+      <AlertDialog open={!!pendingSchedule} onOpenChange={(o) => !o && setPendingSchedule(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("confirm_schedule_title")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("confirm_schedule_desc")}
+              {pendingSchedule && (
+                <span className="mt-2 block font-medium text-foreground">
+                  {new Date(pendingSchedule.value).toLocaleString()}
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmSchedule}>{t("confirm")}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
