@@ -202,6 +202,20 @@ const en: Dict = {
   confirm: "Confirm",
   err_schedule_past: "Please choose a future time",
   err_schedule_status: "Cannot schedule pickup for this order status",
+  schedule_delivery: "Schedule delivery time",
+  delivery_fee: "Delivery fee (₹)",
+  suggest_fee: "Suggest fee",
+  freshness_window: "Freshness window",
+  hours_short: "h",
+  err_delivery_before_pickup: "Delivery must be after pickup",
+  err_delivery_beyond_freshness: "Deliver within freshness window",
+  plan_trip: "Plan trip",
+  save_plan: "Save plan",
+  confirm_plan_title: "Confirm delivery plan",
+  confirm_plan_desc: "Save this pickup/delivery time and fee?",
+  pickup: "Pickup",
+  delivery_time: "Delivery",
+  distance_km: "Distance (km)",
 };
 
 const hi: Dict = {
