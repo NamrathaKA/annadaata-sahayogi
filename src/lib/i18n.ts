@@ -272,6 +272,11 @@ const hi: Dict = {
   schedule_pickup: "पिकअप तारीख तय करें",
   scheduled_for: "निर्धारित",
   save_schedule: "सहेजें",
+  confirm_schedule_title: "पिकअप समय की पुष्टि करें",
+  confirm_schedule_desc: "क्या आप इस समय पिकअप शेड्यूल करना चाहते हैं?",
+  confirm: "पुष्टि करें",
+  err_schedule_past: "कृपया भविष्य का समय चुनें",
+  err_schedule_status: "इस ऑर्डर स्थिति के लिए शेड्यूल संभव नहीं",
 };
 
 const DICTS: Record<Lang, Dict> = { kn, en, hi, ta: kn, te: kn };
