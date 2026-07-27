@@ -284,6 +284,26 @@ function DeliveryDash() {
           </div>
         )}
       </section>
+
+      <AlertDialog open={!!pendingSchedule} onOpenChange={(o) => !o && setPendingSchedule(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("confirm_schedule_title")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("confirm_schedule_desc")}
+              {pendingSchedule && (
+                <span className="mt-2 block font-medium text-foreground">
+                  {new Date(pendingSchedule.value).toLocaleString()}
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmSchedule}>{t("confirm")}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
