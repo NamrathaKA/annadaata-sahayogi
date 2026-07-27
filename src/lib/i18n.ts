@@ -183,6 +183,11 @@ const en: Dict = {
   schedule_pickup: "Schedule pickup date",
   scheduled_for: "Scheduled",
   save_schedule: "Save",
+  confirm_schedule_title: "Confirm pickup time",
+  confirm_schedule_desc: "Are you sure you want to schedule pickup at this time?",
+  confirm: "Confirm",
+  err_schedule_past: "Please choose a future time",
+  err_schedule_status: "Cannot schedule pickup for this order status",
 };
 
 const hi: Dict = {
