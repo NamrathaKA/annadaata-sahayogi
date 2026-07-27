@@ -99,6 +99,20 @@ const kn: Dict = {
   confirm: "ದೃಢೀಕರಿಸಿ",
   err_schedule_past: "ಭವಿಷ್ಯದ ಸಮಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
   err_schedule_status: "ಈ ಆದೇಶದ ಸ್ಥಿತಿಗೆ ಸಮಯ ನಿಗದಿಪಡಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ",
+  schedule_delivery: "ವಿತರಣೆ ಸಮಯ ನಿಗದಿಪಡಿಸಿ",
+  delivery_fee: "ವಿತರಣೆ ಶುಲ್ಕ (₹)",
+  suggest_fee: "ಶುಲ್ಕ ಸಲಹೆ",
+  freshness_window: "ತಾಜಾತನ ಅವಧಿ",
+  hours_short: "ಗಂಟೆ",
+  err_delivery_before_pickup: "ವಿತರಣೆ ಪಿಕಪ್ ನಂತರವೇ ಇರಬೇಕು",
+  err_delivery_beyond_freshness: "ತಾಜಾತನ ಅವಧಿಯೊಳಗೆ ವಿತರಿಸಿ",
+  plan_trip: "ಪ್ರವಾಸ ಯೋಜನೆ",
+  save_plan: "ಯೋಜನೆ ಉಳಿಸಿ",
+  confirm_plan_title: "ವಿತರಣೆ ಯೋಜನೆ ದೃಢೀಕರಿಸಿ",
+  confirm_plan_desc: "ಈ ಪಿಕಪ್/ವಿತರಣೆ ಸಮಯ ಮತ್ತು ಶುಲ್ಕವನ್ನು ಉಳಿಸಬೇಕೆ?",
+  pickup: "ಪಿಕಪ್",
+  delivery_time: "ವಿತರಣೆ",
+  distance_km: "ಅಂತರ (ಕಿ.ಮೀ)",
 };
 
 const en: Dict = {
