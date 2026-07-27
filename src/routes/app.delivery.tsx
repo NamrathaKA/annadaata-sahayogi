@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -18,9 +18,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { MapPin, Phone, Navigation } from "lucide-react";
+import { MapPin, Phone, Navigation, Sparkles, Clock } from "lucide-react";
 
-// Only these order statuses can have a pickup time scheduled.
 const SCHEDULABLE_STATUSES = new Set(["pending", "accepted"]);
 
 function toLocalInput(iso: string | null): string {
@@ -29,56 +28,28 @@ function toLocalInput(iso: string | null): string {
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
-
 function nowLocalInput(): string {
   return toLocalInput(new Date().toISOString());
 }
 
-function ScheduleInput({
-  initial,
-  status,
-  onRequestSave,
-  saveLabel,
-  t,
-}: {
-  initial: string | null;
-  status: string;
-  onRequestSave: (v: string) => void;
-  saveLabel: string;
-  t: (k: string) => string;
-}) {
-  const [v, setV] = useState<string>(toLocalInput(initial));
-  const min = nowLocalInput();
-  const disabled = !SCHEDULABLE_STATUSES.has(status);
+function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {
+  const R = 6371;
+  const toRad = (x: number) => (x * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
 
-  const handleClick = () => {
-    if (disabled) {
-      toast.error(t("err_schedule_status"));
-      return;
-    }
-    if (!v) return;
-    if (new Date(v).getTime() <= Date.now()) {
-      toast.error(t("err_schedule_past"));
-      return;
-    }
-    onRequestSave(v);
-  };
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      <Input
-        type="datetime-local"
-        value={v}
-        min={min}
-        disabled={disabled}
-        onChange={(e) => setV(e.target.value)}
-        className="max-w-[220px]"
-      />
-      <Button type="button" size="sm" onClick={handleClick} disabled={!v || disabled}>
-        {saveLabel}
-      </Button>
-    </div>
-  );
+// Simple fee model: base ₹40 + ₹12/km + ₹2 per unit quantity, rounded to ₹5.
+function suggestFee(km: number | null, quantity: number): number {
+  const base = 40;
+  const perKm = 12;
+  const perUnit = 2;
+  const raw = base + (km ?? 5) * perKm + quantity * perUnit;
+  return Math.max(50, Math.round(raw / 5) * 5);
 }
 
 export const Route = createFileRoute("/app/delivery")({
@@ -93,26 +64,23 @@ interface Order {
   delivery_lat: number | null; delivery_lng: number | null;
   farmer_phone: string | null;
   scheduled_pickup_at: string | null;
+  scheduled_delivery_at: string | null;
+  delivery_fee: number | null;
+  freshness_hours?: number | null;
+  harvest_date?: string | null;
+  crop_name?: string | null;
   created_at: string;
 }
 
 function mapsUrl(lat: number | null, lng: number | null, address: string | null): string {
-  if (lat != null && lng != null) {
-    return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-  }
-  if (address) {
-    return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
-  }
+  if (lat != null && lng != null) return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+  if (address) return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
   return "";
 }
 
 function ContactRow({ label, phone, address, lat, lng, t }: {
-  label: string;
-  phone: string | null;
-  address: string | null;
-  lat: number | null;
-  lng: number | null;
-  t: (k: string) => string;
+  label: string; phone: string | null; address: string | null;
+  lat: number | null; lng: number | null; t: (k: string) => string;
 }) {
   const url = mapsUrl(lat, lng, address);
   return (
@@ -127,9 +95,7 @@ function ContactRow({ label, phone, address, lat, lng, t }: {
       <div className="mt-2 flex flex-wrap gap-2">
         {phone && (
           <Button asChild size="sm" variant="outline">
-            <a href={`tel:${phone}`}>
-              <Phone className="mr-1 h-3.5 w-3.5" /> {phone}
-            </a>
+            <a href={`tel:${phone}`}><Phone className="mr-1 h-3.5 w-3.5" /> {phone}</a>
           </Button>
         )}
         {url && (
@@ -144,22 +110,109 @@ function ContactRow({ label, phone, address, lat, lng, t }: {
   );
 }
 
+function TripPlanner({
+  order, onRequestSave, t,
+}: {
+  order: Order;
+  onRequestSave: (pickup: string, delivery: string, fee: number) => void;
+  t: (k: string) => string;
+}) {
+  const [pickup, setPickup] = useState<string>(toLocalInput(order.scheduled_pickup_at));
+  const [delivery, setDelivery] = useState<string>(toLocalInput(order.scheduled_delivery_at));
+  const [fee, setFee] = useState<string>(order.delivery_fee != null ? String(order.delivery_fee) : "");
+  const disabled = !SCHEDULABLE_STATUSES.has(order.status);
+  const min = nowLocalInput();
+  const freshnessHours = order.freshness_hours ?? 48;
+
+  const distanceKm = useMemo(() => {
+    if (order.pickup_lat != null && order.pickup_lng != null && order.delivery_lat != null && order.delivery_lng != null) {
+      return haversineKm(
+        { lat: order.pickup_lat, lng: order.pickup_lng },
+        { lat: order.delivery_lat, lng: order.delivery_lng },
+      );
+    }
+    return null;
+  }, [order]);
+
+  const handleSuggestFee = () => {
+    setFee(String(suggestFee(distanceKm, order.quantity)));
+  };
+
+  const handleSave = () => {
+    if (disabled) { toast.error(t("err_schedule_status")); return; }
+    if (!pickup || !delivery || !fee) return;
+    const pickupTs = new Date(pickup).getTime();
+    const deliveryTs = new Date(delivery).getTime();
+    if (pickupTs <= Date.now()) { toast.error(t("err_schedule_past")); return; }
+    if (deliveryTs <= pickupTs) { toast.error(t("err_delivery_before_pickup")); return; }
+    const freshnessMs = freshnessHours * 3600 * 1000;
+    if (deliveryTs - pickupTs > freshnessMs) { toast.error(t("err_delivery_beyond_freshness")); return; }
+    const feeNum = Number(fee);
+    if (!Number.isFinite(feeNum) || feeNum <= 0) return;
+    onRequestSave(pickup, delivery, feeNum);
+  };
+
+  return (
+    <div className="space-y-2 rounded-md border bg-muted/30 p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+        <span className="font-semibold uppercase tracking-wide text-muted-foreground">{t("plan_trip")}</span>
+        <span className="flex items-center gap-1 text-muted-foreground">
+          <Clock className="h-3 w-3" /> {t("freshness_window")}: {freshnessHours}{t("hours_short")}
+          {distanceKm != null && <> · {t("distance_km")}: {distanceKm.toFixed(1)}</>}
+        </span>
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <label className="space-y-1 text-xs">
+          <span className="text-muted-foreground">{t("pickup")}</span>
+          <Input type="datetime-local" value={pickup} min={min} disabled={disabled}
+            onChange={(e) => setPickup(e.target.value)} />
+        </label>
+        <label className="space-y-1 text-xs">
+          <span className="text-muted-foreground">{t("delivery_time")}</span>
+          <Input type="datetime-local" value={delivery} min={pickup || min} disabled={disabled}
+            onChange={(e) => setDelivery(e.target.value)} />
+        </label>
+      </div>
+      <div className="flex flex-wrap items-end gap-2">
+        <label className="flex-1 space-y-1 text-xs">
+          <span className="text-muted-foreground">{t("delivery_fee")}</span>
+          <Input type="number" min={0} step={5} value={fee} disabled={disabled}
+            onChange={(e) => setFee(e.target.value)} placeholder="₹" />
+        </label>
+        <Button type="button" size="sm" variant="outline" onClick={handleSuggestFee} disabled={disabled}>
+          <Sparkles className="mr-1 h-3.5 w-3.5" /> {t("suggest_fee")}
+        </Button>
+        <Button type="button" size="sm" onClick={handleSave}
+          disabled={disabled || !pickup || !delivery || !fee}>
+          {t("save_plan")}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function DeliveryDash() {
   const { user } = useAuth();
   const { t } = useI18n();
   const [available, setAvailable] = useState<Order[]>([]);
   const [mine, setMine] = useState<Order[]>([]);
-  const [pendingSchedule, setPendingSchedule] = useState<{ order: Order; value: string } | null>(null);
+  const [pending, setPending] = useState<{ order: Order; pickup: string; delivery: string; fee: number } | null>(null);
 
   const load = async () => {
     if (!user) return;
     const [{ data: a }, { data: m }] = await Promise.all([
       (supabase.from as unknown as (name: string) => ReturnType<typeof supabase.from>)("available_delivery_jobs")
         .select("*").order("created_at", { ascending: false }),
-      supabase.from("orders").select("*").eq("delivery_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("orders").select("*, crop_listings(freshness_hours, harvest_date, crop_name)")
+        .eq("delivery_id", user.id).order("created_at", { ascending: false }),
     ]);
     setAvailable(((a as unknown as Order[]) ?? []).map((o) => ({ ...o, buyer_phone: null, farmer_phone: null })));
-    setMine((m as Order[]) ?? []);
+    setMine(((m as unknown as (Order & { crop_listings?: { freshness_hours: number; harvest_date: string | null; crop_name: string } | null })[]) ?? []).map((o) => ({
+      ...o,
+      freshness_hours: o.crop_listings?.freshness_hours ?? 48,
+      harvest_date: o.crop_listings?.harvest_date ?? null,
+      crop_name: o.crop_listings?.crop_name ?? null,
+    })));
   };
   useEffect(() => { load(); }, [user]);
 
@@ -173,76 +226,59 @@ function DeliveryDash() {
     if (error) toast.error(error.message);
     else { toast.success(t(to)); load(); }
   };
-  const confirmSchedule = async () => {
-    if (!pendingSchedule) return;
-    const { order, value } = pendingSchedule;
-    // Re-fetch latest status to guard against race conditions with farmer/buyer/other updates.
+
+  const confirmPlan = async () => {
+    if (!pending) return;
+    const { order, pickup, delivery, fee } = pending;
     const { data: fresh } = await supabase.from("orders").select("status").eq("id", order.id).maybeSingle();
     if (!fresh || !SCHEDULABLE_STATUSES.has(fresh.status)) {
-      toast.error(t("err_schedule_status"));
-      setPendingSchedule(null);
-      load();
-      return;
+      toast.error(t("err_schedule_status")); setPending(null); load(); return;
     }
-    if (new Date(value).getTime() <= Date.now()) {
-      toast.error(t("err_schedule_past"));
-      setPendingSchedule(null);
-      return;
-    }
-    const iso = new Date(value).toISOString();
-    const { error } = await supabase.from("orders").update({ scheduled_pickup_at: iso }).eq("id", order.id);
+    const { error } = await supabase.from("orders").update({
+      scheduled_pickup_at: new Date(pickup).toISOString(),
+      scheduled_delivery_at: new Date(delivery).toISOString(),
+      delivery_fee: fee,
+    }).eq("id", order.id);
     if (error) toast.error(error.message);
-    else { toast.success(t("save_schedule")); load(); }
-    setPendingSchedule(null);
+    else { toast.success(t("save_plan")); load(); }
+    setPending(null);
   };
 
   const renderOrder = (o: Order, mineJob: boolean) => (
     <Card key={o.id} className="space-y-3 p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <div className="font-semibold">₹{o.total_price} · {o.quantity} units</div>
-          <div className="text-xs text-muted-foreground">
-            {new Date(o.created_at).toLocaleString()}
+          <div className="font-semibold">
+            {o.crop_name ? `${o.crop_name} · ` : ""}₹{o.total_price} · {o.quantity} units
           </div>
+          <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()}</div>
           {o.scheduled_pickup_at && (
             <div className="text-xs font-medium text-primary">
-              {t("scheduled_for")}: {new Date(o.scheduled_pickup_at).toLocaleString()}
+              {t("pickup")}: {new Date(o.scheduled_pickup_at).toLocaleString()}
             </div>
+          )}
+          {o.scheduled_delivery_at && (
+            <div className="text-xs font-medium text-primary">
+              {t("delivery_time")}: {new Date(o.scheduled_delivery_at).toLocaleString()}
+            </div>
+          )}
+          {o.delivery_fee != null && (
+            <div className="text-xs font-medium">{t("delivery_fee")}: ₹{o.delivery_fee}</div>
           )}
         </div>
         <Badge>{t(o.status)}</Badge>
       </div>
 
-      <ContactRow
-        label={t("pickup_location") + " · " + t("farmer_contact")}
-        phone={mineJob ? o.farmer_phone : null}
-        address={o.pickup_address}
-        lat={o.pickup_lat}
-        lng={o.pickup_lng}
-        t={t}
-      />
-      <ContactRow
-        label={t("delivery_address") + " · " + t("buyer_contact")}
-        phone={mineJob ? o.buyer_phone : null}
-        address={o.delivery_address}
-        lat={o.delivery_lat}
-        lng={o.delivery_lng}
-        t={t}
-      />
+      <ContactRow label={t("pickup_location") + " · " + t("farmer_contact")}
+        phone={mineJob ? o.farmer_phone : null} address={o.pickup_address}
+        lat={o.pickup_lat} lng={o.pickup_lng} t={t} />
+      <ContactRow label={t("delivery_address") + " · " + t("buyer_contact")}
+        phone={mineJob ? o.buyer_phone : null} address={o.delivery_address}
+        lat={o.delivery_lat} lng={o.delivery_lng} t={t} />
 
       {mineJob && SCHEDULABLE_STATUSES.has(o.status) && (
-        <div className="rounded-md border bg-muted/30 p-2">
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            {t("schedule_pickup")}
-          </label>
-          <ScheduleInput
-            initial={o.scheduled_pickup_at}
-            status={o.status}
-            onRequestSave={(v) => setPendingSchedule({ order: o, value: v })}
-            saveLabel={t("save_schedule")}
-            t={t}
-          />
-        </div>
+        <TripPlanner order={o} t={t}
+          onRequestSave={(pickup, delivery, fee) => setPending({ order: o, pickup, delivery, fee })} />
       )}
 
       <div className="flex flex-wrap gap-2 pt-1">
@@ -252,9 +288,6 @@ function DeliveryDash() {
       </div>
     </Card>
   );
-
-
-
 
   return (
     <div className="space-y-6">
@@ -268,9 +301,7 @@ function DeliveryDash() {
         {available.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t("no_orders")}</p>
         ) : (
-          <div className="grid gap-3 md:grid-cols-2">
-            {available.map((o) => renderOrder(o, false))}
-          </div>
+          <div className="grid gap-3 md:grid-cols-2">{available.map((o) => renderOrder(o, false))}</div>
         )}
       </section>
 
@@ -279,28 +310,28 @@ function DeliveryDash() {
         {mine.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t("no_orders")}</p>
         ) : (
-          <div className="grid gap-3 md:grid-cols-2">
-            {mine.map((o) => renderOrder(o, true))}
-          </div>
+          <div className="grid gap-3 md:grid-cols-2">{mine.map((o) => renderOrder(o, true))}</div>
         )}
       </section>
 
-      <AlertDialog open={!!pendingSchedule} onOpenChange={(o) => !o && setPendingSchedule(null)}>
+      <AlertDialog open={!!pending} onOpenChange={(o) => !o && setPending(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("confirm_schedule_title")}</AlertDialogTitle>
+            <AlertDialogTitle>{t("confirm_plan_title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("confirm_schedule_desc")}
-              {pendingSchedule && (
-                <span className="mt-2 block font-medium text-foreground">
-                  {new Date(pendingSchedule.value).toLocaleString()}
+              {t("confirm_plan_desc")}
+              {pending && (
+                <span className="mt-2 block space-y-0.5 font-medium text-foreground">
+                  <span className="block">{t("pickup")}: {new Date(pending.pickup).toLocaleString()}</span>
+                  <span className="block">{t("delivery_time")}: {new Date(pending.delivery).toLocaleString()}</span>
+                  <span className="block">{t("delivery_fee")}: ₹{pending.fee}</span>
                 </span>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmSchedule}>{t("confirm")}</AlertDialogAction>
+            <AlertDialogAction onClick={confirmPlan}>{t("confirm")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

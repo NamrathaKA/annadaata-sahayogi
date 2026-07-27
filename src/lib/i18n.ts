@@ -99,6 +99,20 @@ const kn: Dict = {
   confirm: "ದೃಢೀಕರಿಸಿ",
   err_schedule_past: "ಭವಿಷ್ಯದ ಸಮಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
   err_schedule_status: "ಈ ಆದೇಶದ ಸ್ಥಿತಿಗೆ ಸಮಯ ನಿಗದಿಪಡಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ",
+  schedule_delivery: "ವಿತರಣೆ ಸಮಯ ನಿಗದಿಪಡಿಸಿ",
+  delivery_fee: "ವಿತರಣೆ ಶುಲ್ಕ (₹)",
+  suggest_fee: "ಶುಲ್ಕ ಸಲಹೆ",
+  freshness_window: "ತಾಜಾತನ ಅವಧಿ",
+  hours_short: "ಗಂಟೆ",
+  err_delivery_before_pickup: "ವಿತರಣೆ ಪಿಕಪ್ ನಂತರವೇ ಇರಬೇಕು",
+  err_delivery_beyond_freshness: "ತಾಜಾತನ ಅವಧಿಯೊಳಗೆ ವಿತರಿಸಿ",
+  plan_trip: "ಪ್ರವಾಸ ಯೋಜನೆ",
+  save_plan: "ಯೋಜನೆ ಉಳಿಸಿ",
+  confirm_plan_title: "ವಿತರಣೆ ಯೋಜನೆ ದೃಢೀಕರಿಸಿ",
+  confirm_plan_desc: "ಈ ಪಿಕಪ್/ವಿತರಣೆ ಸಮಯ ಮತ್ತು ಶುಲ್ಕವನ್ನು ಉಳಿಸಬೇಕೆ?",
+  pickup: "ಪಿಕಪ್",
+  delivery_time: "ವಿತರಣೆ",
+  distance_km: "ಅಂತರ (ಕಿ.ಮೀ)",
 };
 
 const en: Dict = {
@@ -188,6 +202,20 @@ const en: Dict = {
   confirm: "Confirm",
   err_schedule_past: "Please choose a future time",
   err_schedule_status: "Cannot schedule pickup for this order status",
+  schedule_delivery: "Schedule delivery time",
+  delivery_fee: "Delivery fee (₹)",
+  suggest_fee: "Suggest fee",
+  freshness_window: "Freshness window",
+  hours_short: "h",
+  err_delivery_before_pickup: "Delivery must be after pickup",
+  err_delivery_beyond_freshness: "Deliver within freshness window",
+  plan_trip: "Plan trip",
+  save_plan: "Save plan",
+  confirm_plan_title: "Confirm delivery plan",
+  confirm_plan_desc: "Save this pickup/delivery time and fee?",
+  pickup: "Pickup",
+  delivery_time: "Delivery",
+  distance_km: "Distance (km)",
 };
 
 const hi: Dict = {
@@ -277,6 +305,20 @@ const hi: Dict = {
   confirm: "पुष्टि करें",
   err_schedule_past: "कृपया भविष्य का समय चुनें",
   err_schedule_status: "इस ऑर्डर स्थिति के लिए शेड्यूल संभव नहीं",
+  schedule_delivery: "डिलीवरी समय तय करें",
+  delivery_fee: "डिलीवरी शुल्क (₹)",
+  suggest_fee: "शुल्क सुझाव",
+  freshness_window: "ताज़गी अवधि",
+  hours_short: "घं",
+  err_delivery_before_pickup: "डिलीवरी पिकअप के बाद होनी चाहिए",
+  err_delivery_beyond_freshness: "ताज़गी अवधि में डिलीवर करें",
+  plan_trip: "यात्रा योजना",
+  save_plan: "योजना सहेजें",
+  confirm_plan_title: "डिलीवरी योजना पुष्टि करें",
+  confirm_plan_desc: "यह पिकअप/डिलीवरी समय और शुल्क सहेजें?",
+  pickup: "पिकअप",
+  delivery_time: "डिलीवरी",
+  distance_km: "दूरी (कि.मी)",
 };
 
 const DICTS: Record<Lang, Dict> = { kn, en, hi, ta: kn, te: kn };
