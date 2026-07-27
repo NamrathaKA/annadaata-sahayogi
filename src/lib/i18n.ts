@@ -94,6 +94,11 @@ const kn: Dict = {
   schedule_pickup: "ಎತ್ತಿಕೊಳ್ಳುವ ದಿನಾಂಕ ನಿಗದಿಪಡಿಸಿ",
   scheduled_for: "ನಿಗದಿತ",
   save_schedule: "ಉಳಿಸಿ",
+  confirm_schedule_title: "ಪಿಕಪ್ ಸಮಯವನ್ನು ದೃಢೀಕರಿಸಿ",
+  confirm_schedule_desc: "ಈ ಸಮಯದಲ್ಲಿ ಪಿಕಪ್ ನಿಗದಿಪಡಿಸಲು ನೀವು ಖಚಿತವಾಗಿದ್ದೀರಾ?",
+  confirm: "ದೃಢೀಕರಿಸಿ",
+  err_schedule_past: "ಭವಿಷ್ಯದ ಸಮಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+  err_schedule_status: "ಈ ಆದೇಶದ ಸ್ಥಿತಿಗೆ ಸಮಯ ನಿಗದಿಪಡಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ",
 };
 
 const en: Dict = {
