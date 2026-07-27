@@ -149,6 +149,7 @@ function DeliveryDash() {
   const { t } = useI18n();
   const [available, setAvailable] = useState<Order[]>([]);
   const [mine, setMine] = useState<Order[]>([]);
+  const [pendingSchedule, setPendingSchedule] = useState<{ order: Order; value: string } | null>(null);
 
   const load = async () => {
     if (!user) return;
@@ -172,11 +173,27 @@ function DeliveryDash() {
     if (error) toast.error(error.message);
     else { toast.success(t(to)); load(); }
   };
-  const saveSchedule = async (id: string, value: string) => {
-    const iso = value ? new Date(value).toISOString() : null;
-    const { error } = await supabase.from("orders").update({ scheduled_pickup_at: iso }).eq("id", id);
+  const confirmSchedule = async () => {
+    if (!pendingSchedule) return;
+    const { order, value } = pendingSchedule;
+    // Re-fetch latest status to guard against race conditions with farmer/buyer/other updates.
+    const { data: fresh } = await supabase.from("orders").select("status").eq("id", order.id).maybeSingle();
+    if (!fresh || !SCHEDULABLE_STATUSES.has(fresh.status)) {
+      toast.error(t("err_schedule_status"));
+      setPendingSchedule(null);
+      load();
+      return;
+    }
+    if (new Date(value).getTime() <= Date.now()) {
+      toast.error(t("err_schedule_past"));
+      setPendingSchedule(null);
+      return;
+    }
+    const iso = new Date(value).toISOString();
+    const { error } = await supabase.from("orders").update({ scheduled_pickup_at: iso }).eq("id", order.id);
     if (error) toast.error(error.message);
     else { toast.success(t("save_schedule")); load(); }
+    setPendingSchedule(null);
   };
 
   const renderOrder = (o: Order, mineJob: boolean) => (
@@ -213,15 +230,17 @@ function DeliveryDash() {
         t={t}
       />
 
-      {mineJob && (o.status === "accepted" || o.status === "picked_up") && (
+      {mineJob && SCHEDULABLE_STATUSES.has(o.status) && (
         <div className="rounded-md border bg-muted/30 p-2">
           <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {t("schedule_pickup")}
           </label>
           <ScheduleInput
             initial={o.scheduled_pickup_at}
-            onSave={(v) => saveSchedule(o.id, v)}
+            status={o.status}
+            onRequestSave={(v) => setPendingSchedule({ order: o, value: v })}
             saveLabel={t("save_schedule")}
+            t={t}
           />
         </div>
       )}
@@ -233,6 +252,7 @@ function DeliveryDash() {
       </div>
     </Card>
   );
+
 
 
 
