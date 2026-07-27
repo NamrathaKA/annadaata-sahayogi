@@ -8,7 +8,20 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { MapPin, Phone, Navigation } from "lucide-react";
+
+// Only these order statuses can have a pickup time scheduled.
+const SCHEDULABLE_STATUSES = new Set(["pending", "accepted"]);
 
 function toLocalInput(iso: string | null): string {
   if (!iso) return "";
@@ -17,12 +30,53 @@ function toLocalInput(iso: string | null): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-function ScheduleInput({ initial, onSave, saveLabel }: { initial: string | null; onSave: (v: string) => void; saveLabel: string }) {
+function nowLocalInput(): string {
+  return toLocalInput(new Date().toISOString());
+}
+
+function ScheduleInput({
+  initial,
+  status,
+  onRequestSave,
+  saveLabel,
+  t,
+}: {
+  initial: string | null;
+  status: string;
+  onRequestSave: (v: string) => void;
+  saveLabel: string;
+  t: (k: string) => string;
+}) {
   const [v, setV] = useState<string>(toLocalInput(initial));
+  const min = nowLocalInput();
+  const disabled = !SCHEDULABLE_STATUSES.has(status);
+
+  const handleClick = () => {
+    if (disabled) {
+      toast.error(t("err_schedule_status"));
+      return;
+    }
+    if (!v) return;
+    if (new Date(v).getTime() <= Date.now()) {
+      toast.error(t("err_schedule_past"));
+      return;
+    }
+    onRequestSave(v);
+  };
+
   return (
     <div className="flex flex-wrap gap-2">
-      <Input type="datetime-local" value={v} onChange={(e) => setV(e.target.value)} className="max-w-[220px]" />
-      <Button type="button" size="sm" onClick={() => onSave(v)} disabled={!v}>{saveLabel}</Button>
+      <Input
+        type="datetime-local"
+        value={v}
+        min={min}
+        disabled={disabled}
+        onChange={(e) => setV(e.target.value)}
+        className="max-w-[220px]"
+      />
+      <Button type="button" size="sm" onClick={handleClick} disabled={!v || disabled}>
+        {saveLabel}
+      </Button>
     </div>
   );
 }
