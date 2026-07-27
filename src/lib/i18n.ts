@@ -305,6 +305,20 @@ const hi: Dict = {
   confirm: "पुष्टि करें",
   err_schedule_past: "कृपया भविष्य का समय चुनें",
   err_schedule_status: "इस ऑर्डर स्थिति के लिए शेड्यूल संभव नहीं",
+  schedule_delivery: "डिलीवरी समय तय करें",
+  delivery_fee: "डिलीवरी शुल्क (₹)",
+  suggest_fee: "शुल्क सुझाव",
+  freshness_window: "ताज़गी अवधि",
+  hours_short: "घं",
+  err_delivery_before_pickup: "डिलीवरी पिकअप के बाद होनी चाहिए",
+  err_delivery_beyond_freshness: "ताज़गी अवधि में डिलीवर करें",
+  plan_trip: "यात्रा योजना",
+  save_plan: "योजना सहेजें",
+  confirm_plan_title: "डिलीवरी योजना पुष्टि करें",
+  confirm_plan_desc: "यह पिकअप/डिलीवरी समय और शुल्क सहेजें?",
+  pickup: "पिकअप",
+  delivery_time: "डिलीवरी",
+  distance_km: "दूरी (कि.मी)",
 };
 
 const DICTS: Record<Lang, Dict> = { kn, en, hi, ta: kn, te: kn };
