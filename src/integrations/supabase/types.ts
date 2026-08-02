@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      available_delivery_jobs: {
+        Row: {
+          buyer_id: string
+          created_at: string
+          crop_name: string
+          delivery_address: string
+          delivery_fee: number | null
+          delivery_lat: number | null
+          delivery_lng: number | null
+          farmer_id: string
+          freshness_hours: number
+          harvest_date: string | null
+          id: string
+          listing_id: string
+          pickup_address: string | null
+          pickup_lat: number | null
+          pickup_lng: number | null
+          quantity: number
+          scheduled_delivery_at: string | null
+          scheduled_pickup_at: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          total_price: number
+        }
+        Insert: {
+          buyer_id: string
+          created_at: string
+          crop_name: string
+          delivery_address: string
+          delivery_fee?: number | null
+          delivery_lat?: number | null
+          delivery_lng?: number | null
+          farmer_id: string
+          freshness_hours?: number
+          harvest_date?: string | null
+          id: string
+          listing_id: string
+          pickup_address?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          quantity: number
+          scheduled_delivery_at?: string | null
+          scheduled_pickup_at?: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          total_price: number
+        }
+        Update: {
+          buyer_id?: string
+          created_at?: string
+          crop_name?: string
+          delivery_address?: string
+          delivery_fee?: number | null
+          delivery_lat?: number | null
+          delivery_lng?: number | null
+          farmer_id?: string
+          freshness_hours?: number
+          harvest_date?: string | null
+          id?: string
+          listing_id?: string
+          pickup_address?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          quantity?: number
+          scheduled_delivery_at?: string | null
+          scheduled_pickup_at?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          total_price?: number
+        }
+        Relationships: []
+      }
       crop_listings: {
         Row: {
           created_at: string
@@ -189,39 +258,7 @@ export type Database = {
       }
     }
     Views: {
-      available_delivery_jobs: {
-        Row: {
-          buyer_id: string | null
-          created_at: string | null
-          crop_name: string | null
-          delivery_address: string | null
-          delivery_fee: number | null
-          delivery_lat: number | null
-          delivery_lng: number | null
-          farmer_id: string | null
-          freshness_hours: number | null
-          harvest_date: string | null
-          id: string | null
-          listing_id: string | null
-          pickup_address: string | null
-          pickup_lat: number | null
-          pickup_lng: number | null
-          quantity: number | null
-          scheduled_delivery_at: string | null
-          scheduled_pickup_at: string | null
-          status: Database["public"]["Enums"]["order_status"] | null
-          total_price: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "orders_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
-            referencedRelation: "crop_listings"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       [_ in never]: never
