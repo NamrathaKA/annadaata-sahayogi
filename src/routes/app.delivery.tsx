@@ -120,6 +120,7 @@ function TripPlanner({
   const [pickup, setPickup] = useState<string>(toLocalInput(order.scheduled_pickup_at));
   const [delivery, setDelivery] = useState<string>(toLocalInput(order.scheduled_delivery_at));
   const [fee, setFee] = useState<string>(order.delivery_fee != null ? String(order.delivery_fee) : "");
+  const [aiBusy, setAiBusy] = useState(false);
   const disabled = !SCHEDULABLE_STATUSES.has(order.status);
   const min = nowLocalInput();
   const freshnessHours = order.freshness_hours ?? 48;
@@ -136,6 +137,35 @@ function TripPlanner({
 
   const handleSuggestFee = () => {
     setFee(String(suggestFee(distanceKm, order.quantity)));
+  };
+
+  const handleAiPlan = async () => {
+    setAiBusy(true);
+    try {
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+      const response = await fetch("/api/crop-ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token ?? ""}` },
+        body: JSON.stringify({
+          action: "delivery_plan",
+          crop_name: order.crop_name ?? "fresh produce",
+          quantity: order.quantity,
+          freshness_hours: freshnessHours,
+          distance_km: distanceKm,
+        }),
+      });
+      const plan = await response.json();
+      if (!response.ok) throw new Error(plan.error || t("ai_plan_failed"));
+      setPickup(toLocalInput(plan.pickup));
+      setDelivery(toLocalInput(plan.delivery));
+      setFee(String(plan.fee));
+      toast.success(t("ai_plan_ready"));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("ai_plan_failed"));
+    } finally {
+      setAiBusy(false);
+    }
   };
 
   const handleSave = () => {
@@ -182,6 +212,9 @@ function TripPlanner({
         <Button type="button" size="sm" variant="outline" onClick={handleSuggestFee} disabled={disabled}>
           <Sparkles className="mr-1 h-3.5 w-3.5" /> {t("suggest_fee")}
         </Button>
+        <Button type="button" size="sm" variant="outline" onClick={handleAiPlan} disabled={disabled || aiBusy}>
+          <Sparkles className="mr-1 h-3.5 w-3.5" /> {aiBusy ? t("ai_thinking") : t("ai_plan_trip")}
+        </Button>
         <Button type="button" size="sm" onClick={handleSave}
           disabled={disabled || !pickup || !delivery || !fee}>
           {t("save_plan")}
@@ -200,12 +233,14 @@ function DeliveryDash() {
 
   const load = async () => {
     if (!user) return;
-    const [{ data: a }, { data: m }] = await Promise.all([
+    const [{ data: a, error: availableError }, { data: m, error: mineError }] = await Promise.all([
       (supabase.from as unknown as (name: string) => ReturnType<typeof supabase.from>)("available_delivery_jobs")
         .select("*").order("created_at", { ascending: false }),
       supabase.from("orders").select("*, crop_listings(freshness_hours, harvest_date, crop_name)")
         .eq("delivery_id", user.id).order("created_at", { ascending: false }),
     ]);
+    if (availableError) toast.error(`${t("available_jobs")}: ${availableError.message}`);
+    if (mineError) toast.error(`${t("my_jobs")}: ${mineError.message}`);
     setAvailable(((a as unknown as Order[]) ?? []).map((o) => ({ ...o, buyer_phone: null, farmer_phone: null })));
     setMine(((m as unknown as (Order & { crop_listings?: { freshness_hours: number; harvest_date: string | null; crop_name: string } | null })[]) ?? []).map((o) => ({
       ...o,
@@ -217,9 +252,16 @@ function DeliveryDash() {
   useEffect(() => { load(); }, [user]);
 
   const takeJob = async (id: string) => {
-    const { error } = await supabase.from("orders").update({ delivery_id: user!.id, status: "accepted" }).eq("id", id);
+    if (!user) return;
+    const { data, error } = await supabase.from("orders")
+      .update({ delivery_id: user.id, status: "accepted" })
+      .eq("id", id)
+      .is("delivery_id", null)
+      .select("id")
+      .maybeSingle();
     if (error) toast.error(error.message);
-    else { toast.success("Job accepted"); load(); }
+    else if (!data) toast.error(t("job_already_taken"));
+    else { toast.success(t("job_accepted")); load(); }
   };
   const advance = async (id: string, to: "picked_up" | "delivered") => {
     const { error } = await supabase.from("orders").update({ status: to }).eq("id", id);

@@ -26,7 +26,7 @@ async function requireUser(request: Request): Promise<Response | null> {
 async function callModel(apiKey: string, sys: string, user: string): Promise<string> {
   const res = await fetch(`${LOVABLE_URL}/chat/completions`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    headers: { "Lovable-API-Key": apiKey, "Content-Type": "application/json" },
     body: JSON.stringify({
       model: MODEL,
       messages: [
@@ -56,11 +56,14 @@ export const Route = createFileRoute("/api/crop-ai")({
         if (!key) return Response.json({ error: "LOVABLE_API_KEY missing" }, { status: 500 });
 
         let body: {
-          action?: "price" | "seasonal";
+          action?: "price" | "seasonal" | "delivery_plan";
           crop_name?: string;
           unit?: string;
           location?: string;
           language?: string;
+          quantity?: number;
+          freshness_hours?: number;
+          distance_km?: number | null;
         };
         try { body = await request.json(); } catch { return Response.json({ error: "bad json" }, { status: 400 }); }
 
@@ -68,6 +71,30 @@ export const Route = createFileRoute("/api/crop-ai")({
         const langLabel = LANG_LABEL[lang];
         const month = new Date().toLocaleString("en-US", { month: "long" });
         const location = (body.location || "Karnataka, India").slice(0, 120);
+
+        if (body.action === "delivery_plan") {
+          const freshnessHours = Math.min(168, Math.max(2, Number(body.freshness_hours) || 48));
+          const distanceKm = Math.max(0, Number(body.distance_km) || 5);
+          const quantity = Math.max(1, Number(body.quantity) || 1);
+          const crop = (body.crop_name || "fresh produce").slice(0, 80);
+          const sys = "You plan practical farm pickup and delivery trips in India. Return strict JSON only.";
+          const user = `Crop: ${crop}; quantity: ${quantity}; distance: ${distanceKm.toFixed(1)} km; freshness window: ${freshnessHours} hours. Current time: ${new Date().toISOString()}. Return {"pickup_delay_hours": number, "travel_hours": number, "fee_inr": number}. Pickup must be 1-24 hours from now, travel must be realistic and within freshness, and fee must be a fair positive INR amount.`;
+          try {
+            const raw = await callModel(key, sys, user);
+            const parsed = safeJson<{ pickup_delay_hours: number; travel_hours: number; fee_inr: number }>(raw);
+            if (!parsed) return Response.json({ error: "bad AI response" }, { status: 502 });
+            const pickupDelay = Math.min(24, Math.max(1, Number(parsed.pickup_delay_hours) || 2));
+            const maxTravel = Math.max(1, freshnessHours - 0.5);
+            const travelHours = Math.min(maxTravel, Math.max(0.5, Number(parsed.travel_hours) || distanceKm / 25));
+            const fallbackFee = Math.max(50, Math.round((40 + distanceKm * 12 + quantity * 2) / 5) * 5);
+            const fee = Math.max(50, Math.round((Number(parsed.fee_inr) || fallbackFee) / 5) * 5);
+            const pickup = new Date(Date.now() + pickupDelay * 3600_000);
+            const delivery = new Date(pickup.getTime() + travelHours * 3600_000);
+            return Response.json({ pickup: pickup.toISOString(), delivery: delivery.toISOString(), fee });
+          } catch (error) {
+            return Response.json({ error: error instanceof Error ? error.message : "AI failed" }, { status: 502 });
+          }
+        }
 
         if (body.action === "seasonal") {
           const sys = `You are an agricultural market advisor for small Indian farmers. Suggest crops that are in-season and typically fetch good market prices right now. Reply in ${langLabel}. Return STRICT JSON only.`;

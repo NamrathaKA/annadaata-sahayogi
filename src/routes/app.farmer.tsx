@@ -37,6 +37,9 @@ interface Order {
   status: string;
   delivery_address: string;
   buyer_phone: string | null;
+  scheduled_pickup_at: string | null;
+  scheduled_delivery_at: string | null;
+  delivery_fee: number | null;
   created_at: string;
 }
 
@@ -135,6 +138,13 @@ function FarmerDash() {
                   <div>
                     <div className="font-medium">{o.quantity} units · ₹{o.total_price}</div>
                     <div className="text-xs text-muted-foreground">{o.delivery_address} · {o.buyer_phone ?? ""}</div>
+                    {(o.scheduled_pickup_at || o.scheduled_delivery_at) && (
+                      <div className="mt-2 space-y-0.5 border-l-2 border-primary pl-2 text-xs">
+                        {o.scheduled_pickup_at && <div>{t("pickup")}: {new Date(o.scheduled_pickup_at).toLocaleString()}</div>}
+                        {o.scheduled_delivery_at && <div>{t("delivery_time")}: {new Date(o.scheduled_delivery_at).toLocaleString()}</div>}
+                        {o.delivery_fee != null && <div>{t("delivery_fee")}: ₹{o.delivery_fee}</div>}
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge>{t(o.status)}</Badge>
