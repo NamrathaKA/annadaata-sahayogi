@@ -23,6 +23,7 @@ interface Listing {
 }
 interface Order {
   id: string; quantity: number; total_price: number; status: string; delivery_address: string; created_at: string;
+  scheduled_pickup_at: string | null; scheduled_delivery_at: string | null; delivery_fee: number | null;
 }
 
 function BuyerDash() {
@@ -101,10 +102,17 @@ function BuyerDash() {
         ) : (
           <div className="space-y-2">
             {orders.map((o) => (
-              <Card key={o.id} className="flex items-center justify-between p-4">
+              <Card key={o.id} className="flex flex-wrap items-start justify-between gap-3 p-4">
                 <div>
                   <div className="font-medium">{o.quantity} · ₹{o.total_price}</div>
                   <div className="text-xs text-muted-foreground">{o.delivery_address}</div>
+                  {(o.scheduled_pickup_at || o.scheduled_delivery_at) && (
+                    <div className="mt-2 space-y-0.5 border-l-2 border-primary pl-2 text-xs">
+                      {o.scheduled_pickup_at && <div>{t("pickup")}: {new Date(o.scheduled_pickup_at).toLocaleString()}</div>}
+                      {o.scheduled_delivery_at && <div>{t("delivery_time")}: {new Date(o.scheduled_delivery_at).toLocaleString()}</div>}
+                      {o.delivery_fee != null && <div>{t("delivery_fee")}: ₹{o.delivery_fee}</div>}
+                    </div>
+                  )}
                 </div>
                 <Badge>{t(o.status)}</Badge>
               </Card>

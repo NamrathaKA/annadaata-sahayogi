@@ -113,6 +113,11 @@ const kn: Dict = {
   pickup: "ಪಿಕಪ್",
   delivery_time: "ವಿತರಣೆ",
   distance_km: "ಅಂತರ (ಕಿ.ಮೀ)",
+  ai_plan_trip: "AI ಪ್ರಯಾಣ ಯೋಜನೆ",
+  ai_plan_ready: "AI ಯೋಜನೆ ಸಿದ್ಧವಾಗಿದೆ",
+  ai_plan_failed: "AI ಯೋಜನೆ ವಿಫಲವಾಗಿದೆ",
+  job_already_taken: "ಈ ಕೆಲಸವನ್ನು ಮತ್ತೊಬ್ಬರು ಸ್ವೀಕರಿಸಿದ್ದಾರೆ",
+  job_accepted: "ಕೆಲಸ ಸ್ವೀಕರಿಸಲಾಗಿದೆ",
 };
 
 const en: Dict = {
@@ -216,6 +221,11 @@ const en: Dict = {
   pickup: "Pickup",
   delivery_time: "Delivery",
   distance_km: "Distance (km)",
+  ai_plan_trip: "AI plan trip",
+  ai_plan_ready: "AI plan is ready",
+  ai_plan_failed: "AI planning failed",
+  job_already_taken: "Another partner already accepted this job",
+  job_accepted: "Job accepted",
 };
 
 const hi: Dict = {
@@ -319,6 +329,11 @@ const hi: Dict = {
   pickup: "पिकअप",
   delivery_time: "डिलीवरी",
   distance_km: "दूरी (कि.मी)",
+  ai_plan_trip: "AI यात्रा योजना",
+  ai_plan_ready: "AI योजना तैयार है",
+  ai_plan_failed: "AI योजना विफल रही",
+  job_already_taken: "यह काम किसी अन्य पार्टनर ने ले लिया है",
+  job_accepted: "काम स्वीकार किया गया",
 };
 
 const DICTS: Record<Lang, Dict> = { kn, en, hi, ta: kn, te: kn };
