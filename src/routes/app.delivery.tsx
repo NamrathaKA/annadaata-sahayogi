@@ -326,17 +326,22 @@ function DeliveryDash() {
 
   const takeJob = async (id: string) => {
     if (!user) return;
-    const { data, error } = await (supabase.rpc as unknown as (
-      fn: string,
-      args: Record<string, unknown>,
-    ) => Promise<{ data: { success?: boolean; message?: string } | null; error: { message: string } | null }>)(
-      "accept_order",
-      { p_order_id: id, p_partner_id: user.id },
-    );
+    const { error } = await supabase.from("orders").update({
+      delivery_id: user.id,
+      status: "accepted",
+    }).eq("id", id).is("delivery_id", null).eq("status", "pending");
     if (error) { toast.error(error.message); return; }
-    if (!data?.success) { toast.error(data?.message || t("job_already_taken")); load(); return; }
+
+    const { data: claimed, error: verifyError } = await supabase.from("orders")
+      .select("id")
+      .eq("id", id)
+      .eq("delivery_id", user.id)
+      .maybeSingle();
+    if (verifyError) { toast.error(verifyError.message); return; }
+    if (!claimed) { toast.error(t("job_already_taken")); await load(); return; }
+
     toast.success(t("job_accepted"));
-    load();
+    await load();
   };
   const advance = async (id: string, to: "picked_up" | "delivered") => {
     const { error } = await supabase.from("orders").update({ status: to }).eq("id", id);
