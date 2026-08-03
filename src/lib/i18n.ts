@@ -118,6 +118,10 @@ const kn: Dict = {
   ai_plan_failed: "AI ಯೋಜನೆ ವಿಫಲವಾಗಿದೆ",
   job_already_taken: "ಈ ಕೆಲಸವನ್ನು ಮತ್ತೊಬ್ಬರು ಸ್ವೀಕರಿಸಿದ್ದಾರೆ",
   job_accepted: "ಕೆಲಸ ಸ್ವೀಕರಿಸಲಾಗಿದೆ",
+  schedule_with_ai: "AI ಜೊತೆ ವಿತರಣೆ ಸಮಯ ನಿಗದಿ",
+  ai_slots_title: "AI ಸೂಚಿಸಿದ ಸಮಯ",
+  ai_slots_failed: "ಸಮಯ ಸೂಚನೆಗಳು ಸಿಗಲಿಲ್ಲ",
+  slot_saved: "ವಿತರಣೆ ಸಮಯ ಉಳಿಸಲಾಗಿದೆ",
 };
 
 const en: Dict = {
