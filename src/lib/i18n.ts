@@ -342,6 +342,10 @@ const hi: Dict = {
   ai_plan_failed: "AI योजना विफल रही",
   job_already_taken: "यह काम किसी अन्य पार्टनर ने ले लिया है",
   job_accepted: "काम स्वीकार किया गया",
+  schedule_with_ai: "AI से डिलीवरी समय तय करें",
+  ai_slots_title: "AI सुझाए समय",
+  ai_slots_failed: "समय सुझाव नहीं मिले",
+  slot_saved: "डिलीवरी समय सहेजा गया",
 };
 
 const DICTS: Record<Lang, Dict> = { kn, en, hi, ta: kn, te: kn };
