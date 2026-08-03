@@ -74,6 +74,25 @@ export const Route = createFileRoute("/api/crop-ai")({
         const month = new Date().toLocaleString("en-US", { month: "long" });
         const location = (body.location || "Karnataka, India").slice(0, 120);
 
+        if (body.action === "time_windows") {
+          const distanceKm = Math.max(0, Number(body.distance_km) || 5);
+          const pickupAddress = (body.pickup_address || "farm pickup point").slice(0, 200);
+          const dropAddress = (body.drop_address || "buyer address").slice(0, 200);
+          const sys = "You plan produce delivery time windows in Karnataka, India. Return strict JSON only.";
+          const user = `Suggest 2-3 best delivery time windows for this order. Pickup: ${pickupAddress}, Drop: ${dropAddress}, Current time: ${new Date().toISOString()}, Distance approx: ${distanceKm.toFixed(1)} km. Prefer morning/afternoon slots common in Karnataka. Return only the time suggestions as JSON: {"slots":[{"label": string, "start_iso": string}]} where label is a short human window like "Tomorrow 7:00–9:00 AM" and start_iso is that window's start in ISO 8601, always in the future.`;
+          try {
+            const raw = await callModel(key, sys, user);
+            const parsed = safeJson<{ slots: Array<{ label: string; start_iso: string }> }>(raw);
+            const slots = (parsed?.slots ?? [])
+              .filter((s) => s && typeof s.label === "string" && !Number.isNaN(Date.parse(s.start_iso)))
+              .slice(0, 3);
+            if (slots.length === 0) return Response.json({ error: "bad AI response" }, { status: 502 });
+            return Response.json({ slots });
+          } catch (error) {
+            return Response.json({ error: error instanceof Error ? error.message : "AI failed" }, { status: 502 });
+          }
+        }
+
         if (body.action === "delivery_plan") {
           const freshnessHours = Math.min(168, Math.max(2, Number(body.freshness_hours) || 48));
           const distanceKm = Math.max(0, Number(body.distance_km) || 5);
