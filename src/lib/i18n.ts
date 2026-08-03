@@ -230,6 +230,10 @@ const en: Dict = {
   ai_plan_failed: "AI planning failed",
   job_already_taken: "Another partner already accepted this job",
   job_accepted: "Job accepted",
+  schedule_with_ai: "Schedule Delivery with AI",
+  ai_slots_title: "AI suggested time windows",
+  ai_slots_failed: "Could not get time suggestions",
+  slot_saved: "Delivery time saved",
 };
 
 const hi: Dict = {
