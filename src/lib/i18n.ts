@@ -118,6 +118,10 @@ const kn: Dict = {
   ai_plan_failed: "AI ಯೋಜನೆ ವಿಫಲವಾಗಿದೆ",
   job_already_taken: "ಈ ಕೆಲಸವನ್ನು ಮತ್ತೊಬ್ಬರು ಸ್ವೀಕರಿಸಿದ್ದಾರೆ",
   job_accepted: "ಕೆಲಸ ಸ್ವೀಕರಿಸಲಾಗಿದೆ",
+  schedule_with_ai: "AI ಜೊತೆ ವಿತರಣೆ ಸಮಯ ನಿಗದಿ",
+  ai_slots_title: "AI ಸೂಚಿಸಿದ ಸಮಯ",
+  ai_slots_failed: "ಸಮಯ ಸೂಚನೆಗಳು ಸಿಗಲಿಲ್ಲ",
+  slot_saved: "ವಿತರಣೆ ಸಮಯ ಉಳಿಸಲಾಗಿದೆ",
 };
 
 const en: Dict = {
@@ -226,6 +230,10 @@ const en: Dict = {
   ai_plan_failed: "AI planning failed",
   job_already_taken: "Another partner already accepted this job",
   job_accepted: "Job accepted",
+  schedule_with_ai: "Schedule Delivery with AI",
+  ai_slots_title: "AI suggested time windows",
+  ai_slots_failed: "Could not get time suggestions",
+  slot_saved: "Delivery time saved",
 };
 
 const hi: Dict = {
@@ -334,6 +342,10 @@ const hi: Dict = {
   ai_plan_failed: "AI योजना विफल रही",
   job_already_taken: "यह काम किसी अन्य पार्टनर ने ले लिया है",
   job_accepted: "काम स्वीकार किया गया",
+  schedule_with_ai: "AI से डिलीवरी समय तय करें",
+  ai_slots_title: "AI सुझाए समय",
+  ai_slots_failed: "समय सुझाव नहीं मिले",
+  slot_saved: "डिलीवरी समय सहेजा गया",
 };
 
 const DICTS: Record<Lang, Dict> = { kn, en, hi, ta: kn, te: kn };

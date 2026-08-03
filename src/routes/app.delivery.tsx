@@ -224,6 +224,79 @@ function TripPlanner({
   );
 }
 
+function AiSlotPicker({ order, onSaved, t }: {
+  order: Order;
+  onSaved: () => void;
+  t: (k: string) => string;
+}) {
+  const [slots, setSlots] = useState<Array<{ label: string; start_iso: string }>>([]);
+  const [busy, setBusy] = useState(false);
+
+  const distanceKm = useMemo(() => {
+    if (order.pickup_lat != null && order.pickup_lng != null && order.delivery_lat != null && order.delivery_lng != null) {
+      return haversineKm(
+        { lat: order.pickup_lat, lng: order.pickup_lng },
+        { lat: order.delivery_lat, lng: order.delivery_lng },
+      );
+    }
+    return null;
+  }, [order]);
+
+  const fetchSlots = async () => {
+    setBusy(true);
+    try {
+      const { data } = await supabase.auth.getSession();
+      const res = await fetch("/api/crop-ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${data.session?.access_token ?? ""}` },
+        body: JSON.stringify({
+          action: "time_windows",
+          pickup_address: order.pickup_address,
+          drop_address: order.delivery_address,
+          distance_km: distanceKm,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.slots?.length) throw new Error(json.error || t("ai_slots_failed"));
+      setSlots(json.slots);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("ai_slots_failed"));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const chooseSlot = async (iso: string) => {
+    const { error } = await supabase.from("orders")
+      .update({ scheduled_delivery_at: new Date(iso).toISOString() })
+      .eq("id", order.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success(t("slot_saved"));
+    setSlots([]);
+    onSaved();
+  };
+
+  return (
+    <div className="space-y-2 rounded-md border bg-muted/30 p-3">
+      <Button type="button" size="sm" variant="outline" onClick={fetchSlots} disabled={busy}>
+        <Sparkles className="mr-1 h-3.5 w-3.5" /> {busy ? t("ai_thinking") : t("schedule_with_ai")}
+      </Button>
+      {slots.length > 0 && (
+        <div className="space-y-1.5">
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("ai_slots_title")}</div>
+          <div className="flex flex-wrap gap-2">
+            {slots.map((s) => (
+              <Button key={s.start_iso} type="button" size="sm" onClick={() => chooseSlot(s.start_iso)}>
+                {s.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function DeliveryDash() {
   const { user } = useAuth();
   const { t } = useI18n();
@@ -253,15 +326,17 @@ function DeliveryDash() {
 
   const takeJob = async (id: string) => {
     if (!user) return;
-    const { data, error } = await supabase.from("orders")
-      .update({ delivery_id: user.id, status: "accepted" })
-      .eq("id", id)
-      .is("delivery_id", null)
-      .select("id")
-      .maybeSingle();
-    if (error) toast.error(error.message);
-    else if (!data) toast.error(t("job_already_taken"));
-    else { toast.success(t("job_accepted")); load(); }
+    const { data, error } = await (supabase.rpc as unknown as (
+      fn: string,
+      args: Record<string, unknown>,
+    ) => Promise<{ data: { success?: boolean; message?: string } | null; error: { message: string } | null }>)(
+      "accept_order",
+      { p_order_id: id, p_partner_id: user.id },
+    );
+    if (error) { toast.error(error.message); return; }
+    if (!data?.success) { toast.error(data?.message || t("job_already_taken")); load(); return; }
+    toast.success(t("job_accepted"));
+    load();
   };
   const advance = async (id: string, to: "picked_up" | "delivered") => {
     const { error } = await supabase.from("orders").update({ status: to }).eq("id", id);
@@ -321,6 +396,10 @@ function DeliveryDash() {
       {mineJob && SCHEDULABLE_STATUSES.has(o.status) && (
         <TripPlanner order={o} t={t}
           onRequestSave={(pickup, delivery, fee) => setPending({ order: o, pickup, delivery, fee })} />
+      )}
+
+      {mineJob && SCHEDULABLE_STATUSES.has(o.status) && (
+        <AiSlotPicker order={o} t={t} onSaved={load} />
       )}
 
       <div className="flex flex-wrap gap-2 pt-1">
