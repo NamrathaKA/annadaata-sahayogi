@@ -56,7 +56,7 @@ export const Route = createFileRoute("/api/crop-ai")({
         if (!key) return Response.json({ error: "LOVABLE_API_KEY missing" }, { status: 500 });
 
         let body: {
-          action?: "price" | "seasonal" | "delivery_plan";
+          action?: "price" | "seasonal" | "delivery_plan" | "time_windows";
           crop_name?: string;
           unit?: string;
           location?: string;
@@ -64,6 +64,8 @@ export const Route = createFileRoute("/api/crop-ai")({
           quantity?: number;
           freshness_hours?: number;
           distance_km?: number | null;
+          pickup_address?: string;
+          drop_address?: string;
         };
         try { body = await request.json(); } catch { return Response.json({ error: "bad json" }, { status: 400 }); }
 
