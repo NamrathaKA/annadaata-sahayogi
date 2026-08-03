@@ -398,6 +398,10 @@ function DeliveryDash() {
           onRequestSave={(pickup, delivery, fee) => setPending({ order: o, pickup, delivery, fee })} />
       )}
 
+      {mineJob && SCHEDULABLE_STATUSES.has(o.status) && (
+        <AiSlotPicker order={o} t={t} onSaved={load} />
+      )}
+
       <div className="flex flex-wrap gap-2 pt-1">
         {!mineJob && <Button size="sm" onClick={() => takeJob(o.id)}>{t("accept")}</Button>}
         {mineJob && o.status === "accepted" && <Button size="sm" onClick={() => advance(o.id, "picked_up")}>{t("mark_picked_up")}</Button>}
