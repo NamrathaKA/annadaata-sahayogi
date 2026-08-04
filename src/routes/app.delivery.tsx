@@ -414,12 +414,113 @@ function DeliveryDash() {
     </Card>
   );
 
+  const scheduleDays = useMemo(() => {
+    const active = mine.filter((o) => o.status !== "delivered" && o.status !== "cancelled");
+    const groups = new Map<string, Order[]>();
+    for (const o of active) {
+      const key = o.scheduled_pickup_at ? new Date(o.scheduled_pickup_at).toDateString() : "unscheduled";
+      const list = groups.get(key) ?? [];
+      list.push(o);
+      groups.set(key, list);
+    }
+    const entries = [...groups.entries()].map(([key, orders]) => ({
+      key,
+      orders: orders.sort((a, b) => {
+        const ta = a.scheduled_pickup_at ? new Date(a.scheduled_pickup_at).getTime() : Infinity;
+        const tb = b.scheduled_pickup_at ? new Date(b.scheduled_pickup_at).getTime() : Infinity;
+        return ta - tb;
+      }),
+    }));
+    entries.sort((a, b) => {
+      if (a.key === "unscheduled") return 1;
+      if (b.key === "unscheduled") return -1;
+      return new Date(a.key).getTime() - new Date(b.key).getTime();
+    });
+    return entries;
+  }, [mine]);
+
+  const dayLabel = (key: string) => {
+    if (key === "unscheduled") return t("unscheduled");
+    const today = new Date().toDateString();
+    const tomorrow = new Date(Date.now() + 86400000).toDateString();
+    if (key === today) return t("today");
+    if (key === tomorrow) return t("tomorrow");
+    return new Date(key).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+  };
+
+  const fmtTime = (iso: string | null) =>
+    iso ? new Date(iso).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) : "--:--";
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">{t("dashboard")}</h1>
         <p className="text-sm text-muted-foreground">{t("delivery_intro")}</p>
       </div>
+
+      <section>
+        <h2 className="text-lg font-semibold">{t("my_schedule")}</h2>
+        <p className="mb-3 text-xs text-muted-foreground">{t("schedule_intro")}</p>
+        {scheduleDays.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t("no_schedule")}</p>
+        ) : (
+          <div className="space-y-4">
+            {scheduleDays.map((day) => {
+              const dayFee = day.orders.reduce((sum, o) => sum + (o.delivery_fee ?? 0), 0);
+              return (
+                <Card key={day.key} className="p-4">
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 font-semibold">
+                      <Clock className="h-4 w-4 text-primary" />
+                      {dayLabel(day.key)}
+                      <Badge variant="secondary">{day.orders.length}</Badge>
+                    </div>
+                    {dayFee > 0 && (
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {t("total_earnings")}: ₹{dayFee}
+                      </span>
+                    )}
+                  </div>
+                  <ol className="space-y-3">
+                    {day.orders.map((o) => (
+                      <li key={o.id} className="flex gap-3 border-l-2 border-primary/40 pl-3">
+                        <div className="w-24 shrink-0 text-xs font-semibold text-primary">
+                          <div>{fmtTime(o.scheduled_pickup_at)}</div>
+                          <div className="text-muted-foreground">→ {fmtTime(o.scheduled_delivery_at)}</div>
+                        </div>
+                        <div className="min-w-0 flex-1 text-sm">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-medium">
+                              {o.crop_name ? `${o.crop_name} · ` : ""}{o.quantity} units
+                            </span>
+                            <Badge>{t(o.status)}</Badge>
+                            {o.delivery_fee != null && (
+                              <span className="text-xs">₹{o.delivery_fee}</span>
+                            )}
+                          </div>
+                          <div className="mt-1 flex items-start gap-1 text-xs text-muted-foreground">
+                            <MapPin className="mt-0.5 h-3 w-3 shrink-0" />
+                            <span className="break-words">
+                              {t("pickup")}: {o.pickup_address ?? "—"}
+                            </span>
+                          </div>
+                          <div className="flex items-start gap-1 text-xs text-muted-foreground">
+                            <Navigation className="mt-0.5 h-3 w-3 shrink-0" />
+                            <span className="break-words">
+                              {t("delivery_time")}: {o.delivery_address}
+                            </span>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
 
       <section>
         <h2 className="mb-3 text-lg font-semibold">{t("available_jobs")}</h2>
