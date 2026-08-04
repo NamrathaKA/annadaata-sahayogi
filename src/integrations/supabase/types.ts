@@ -261,7 +261,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      accept_order: { Args: { p_order_id: string }; Returns: Json }
+      [_ in never]: never
     }
     Enums: {
       listing_status: "active" | "sold" | "expired"
