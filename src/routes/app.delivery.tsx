@@ -1,9 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
+import { acceptDeliveryOrder } from "@/lib/delivery-claim.functions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -300,6 +302,7 @@ function AiSlotPicker({ order, onSaved, t }: {
 function DeliveryDash() {
   const { user } = useAuth();
   const { t } = useI18n();
+  const acceptOrder = useServerFn(acceptDeliveryOrder);
   const [available, setAvailable] = useState<Order[]>([]);
   const [mine, setMine] = useState<Order[]>([]);
   const [pending, setPending] = useState<{ order: Order; pickup: string; delivery: string; fee: number } | null>(null);
@@ -326,22 +329,18 @@ function DeliveryDash() {
 
   const takeJob = async (id: string) => {
     if (!user) return;
-    const { error } = await supabase.from("orders").update({
-      delivery_id: user.id,
-      status: "accepted",
-    }).eq("id", id).is("delivery_id", null).eq("status", "pending");
-    if (error) { toast.error(error.message); return; }
-
-    const { data: claimed, error: verifyError } = await supabase.from("orders")
-      .select("id")
-      .eq("id", id)
-      .eq("delivery_id", user.id)
-      .maybeSingle();
-    if (verifyError) { toast.error(verifyError.message); return; }
-    if (!claimed) { toast.error(t("job_already_taken")); await load(); return; }
-
-    toast.success(t("job_accepted"));
-    await load();
+    try {
+      const result = await acceptOrder({ data: { orderId: id } });
+      if (!result.success) {
+        toast.error(result.message);
+        await load();
+        return;
+      }
+      toast.success(t("job_accepted"));
+      await load();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("job_already_taken"));
+    }
   };
   const advance = async (id: string, to: "picked_up" | "delivered") => {
     const { error } = await supabase.from("orders").update({ status: to }).eq("id", id);
