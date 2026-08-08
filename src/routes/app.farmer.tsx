@@ -40,6 +40,8 @@ interface Order {
   scheduled_pickup_at: string | null;
   scheduled_delivery_at: string | null;
   delivery_fee: number | null;
+  delivery_fee_farmer_share: number | null;
+  distance_km: number | null;
   created_at: string;
 }
 
