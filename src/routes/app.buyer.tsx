@@ -20,10 +20,12 @@ export const Route = createFileRoute("/app/buyer")({
 interface Listing {
   id: string; farmer_id: string; crop_name: string; quantity: number; unit: string;
   price_per_unit: number; location: string; description: string | null;
+  pickup_lat: number | null; pickup_lng: number | null;
 }
 interface Order {
   id: string; quantity: number; total_price: number; status: string; delivery_address: string; created_at: string;
   scheduled_pickup_at: string | null; scheduled_delivery_at: string | null; delivery_fee: number | null;
+  delivery_fee_buyer_share: number | null;
 }
 
 function BuyerDash() {
