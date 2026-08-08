@@ -45,15 +45,6 @@ function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: num
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-// Simple fee model: base ₹40 + ₹12/km + ₹2 per unit quantity, rounded to ₹5.
-function suggestFee(km: number | null, quantity: number): number {
-  const base = 40;
-  const perKm = 12;
-  const perUnit = 2;
-  const raw = base + (km ?? 5) * perKm + quantity * perUnit;
-  return Math.max(50, Math.round(raw / 5) * 5);
-}
-
 export const Route = createFileRoute("/app/delivery")({
   component: DeliveryDash,
 });
@@ -121,7 +112,6 @@ function TripPlanner({
 }) {
   const [pickup, setPickup] = useState<string>(toLocalInput(order.scheduled_pickup_at));
   const [delivery, setDelivery] = useState<string>(toLocalInput(order.scheduled_delivery_at));
-  const [fee, setFee] = useState<string>(order.delivery_fee != null ? String(order.delivery_fee) : "");
   const [aiBusy, setAiBusy] = useState(false);
   const disabled = !SCHEDULABLE_STATUSES.has(order.status);
   const min = nowLocalInput();
@@ -136,10 +126,6 @@ function TripPlanner({
     }
     return null;
   }, [order]);
-
-  const handleSuggestFee = () => {
-    setFee(String(suggestFee(distanceKm, order.quantity)));
-  };
 
   const handleAiPlan = async () => {
     setAiBusy(true);
@@ -161,7 +147,6 @@ function TripPlanner({
       if (!response.ok) throw new Error(plan.error || t("ai_plan_failed"));
       setPickup(toLocalInput(plan.pickup));
       setDelivery(toLocalInput(plan.delivery));
-      setFee(String(plan.fee));
       toast.success(t("ai_plan_ready"));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("ai_plan_failed"));
@@ -172,16 +157,14 @@ function TripPlanner({
 
   const handleSave = () => {
     if (disabled) { toast.error(t("err_schedule_status")); return; }
-    if (!pickup || !delivery || !fee) return;
+    if (!pickup || !delivery) return;
     const pickupTs = new Date(pickup).getTime();
     const deliveryTs = new Date(delivery).getTime();
     if (pickupTs <= Date.now()) { toast.error(t("err_schedule_past")); return; }
     if (deliveryTs <= pickupTs) { toast.error(t("err_delivery_before_pickup")); return; }
     const freshnessMs = freshnessHours * 3600 * 1000;
     if (deliveryTs - pickupTs > freshnessMs) { toast.error(t("err_delivery_beyond_freshness")); return; }
-    const feeNum = Number(fee);
-    if (!Number.isFinite(feeNum) || feeNum <= 0) return;
-    onRequestSave(pickup, delivery, feeNum);
+    onRequestSave(pickup, delivery, order.delivery_fee ?? 0);
   };
 
   return (
