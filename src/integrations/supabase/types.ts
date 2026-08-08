@@ -21,8 +21,11 @@ export type Database = {
           crop_name: string
           delivery_address: string
           delivery_fee: number | null
+          delivery_fee_buyer_share: number | null
+          delivery_fee_farmer_share: number | null
           delivery_lat: number | null
           delivery_lng: number | null
+          distance_km: number | null
           farmer_id: string
           freshness_hours: number
           harvest_date: string | null
@@ -43,8 +46,11 @@ export type Database = {
           crop_name: string
           delivery_address: string
           delivery_fee?: number | null
+          delivery_fee_buyer_share?: number | null
+          delivery_fee_farmer_share?: number | null
           delivery_lat?: number | null
           delivery_lng?: number | null
+          distance_km?: number | null
           farmer_id: string
           freshness_hours?: number
           harvest_date?: string | null
@@ -65,8 +71,11 @@ export type Database = {
           crop_name?: string
           delivery_address?: string
           delivery_fee?: number | null
+          delivery_fee_buyer_share?: number | null
+          delivery_fee_farmer_share?: number | null
           delivery_lat?: number | null
           delivery_lng?: number | null
+          distance_km?: number | null
           farmer_id?: string
           freshness_hours?: number
           harvest_date?: string | null
@@ -147,9 +156,12 @@ export type Database = {
           created_at: string
           delivery_address: string
           delivery_fee: number | null
+          delivery_fee_buyer_share: number | null
+          delivery_fee_farmer_share: number | null
           delivery_id: string | null
           delivery_lat: number | null
           delivery_lng: number | null
+          distance_km: number | null
           farmer_id: string
           farmer_phone: string | null
           id: string
@@ -171,9 +183,12 @@ export type Database = {
           created_at?: string
           delivery_address: string
           delivery_fee?: number | null
+          delivery_fee_buyer_share?: number | null
+          delivery_fee_farmer_share?: number | null
           delivery_id?: string | null
           delivery_lat?: number | null
           delivery_lng?: number | null
+          distance_km?: number | null
           farmer_id: string
           farmer_phone?: string | null
           id?: string
@@ -195,9 +210,12 @@ export type Database = {
           created_at?: string
           delivery_address?: string
           delivery_fee?: number | null
+          delivery_fee_buyer_share?: number | null
+          delivery_fee_farmer_share?: number | null
           delivery_id?: string | null
           delivery_lat?: number | null
           delivery_lng?: number | null
+          distance_km?: number | null
           farmer_id?: string
           farmer_phone?: string | null
           id?: string
