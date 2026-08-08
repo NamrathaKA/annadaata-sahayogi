@@ -21,7 +21,7 @@ export async function claimDeliveryOrder(
     .update({ delivery_id: userId, status: "accepted" })
     .eq("id", orderId)
     .is("delivery_id", null)
-    .eq("status", "pending")
+    .eq("status", "accepted")
     .select("id, delivery_id, status")
     .maybeSingle();
 
