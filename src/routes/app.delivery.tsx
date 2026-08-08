@@ -206,19 +206,17 @@ function TripPlanner({
         </label>
       </div>
       <div className="flex flex-wrap items-end gap-2">
-        <label className="flex-1 space-y-1 text-xs">
-          <span className="text-muted-foreground">{t("delivery_fee")}</span>
-          <Input type="number" min={0} step={5} value={fee} disabled={disabled}
-            onChange={(e) => setFee(e.target.value)} placeholder="₹" />
-        </label>
-        <Button type="button" size="sm" variant="outline" onClick={handleSuggestFee} disabled={disabled}>
-          <Sparkles className="mr-1 h-3.5 w-3.5" /> {t("suggest_fee")}
-        </Button>
+        <div className="flex-1 space-y-0.5 text-xs">
+          <div className="text-muted-foreground">{t("delivery_fee")}</div>
+          <div className="font-semibold">₹{order.delivery_fee ?? "-"}</div>
+          <div className="text-muted-foreground">{t("fee_split_note")}</div>
+          <div className="text-muted-foreground">{t("fee_fixed_note")}</div>
+        </div>
         <Button type="button" size="sm" variant="outline" onClick={handleAiPlan} disabled={disabled || aiBusy}>
           <Sparkles className="mr-1 h-3.5 w-3.5" /> {aiBusy ? t("ai_thinking") : t("ai_plan_trip")}
         </Button>
         <Button type="button" size="sm" onClick={handleSave}
-          disabled={disabled || !pickup || !delivery || !fee}>
+          disabled={disabled || !pickup || !delivery}>
           {t("save_plan")}
         </Button>
       </div>
