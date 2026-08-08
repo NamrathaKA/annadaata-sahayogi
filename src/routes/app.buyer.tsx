@@ -157,7 +157,20 @@ function OrderDialog({ listing, buyerId, defaultAddress, defaultPhone, onClose, 
   const [phone, setPhone] = useState(defaultPhone);
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
-  const total = Math.max(0, Number(qty)) * listing.price_per_unit;
+  const quantity = Math.max(0, Number(qty));
+  const total = quantity * listing.price_per_unit;
+  const km = useMemo(() => {
+    if (listing.pickup_lat != null && listing.pickup_lng != null && loc.lat != null && loc.lng != null) {
+      return haversineKm(
+        { lat: listing.pickup_lat, lng: listing.pickup_lng },
+        { lat: loc.lat, lng: loc.lng },
+      );
+    }
+    return null;
+  }, [listing.pickup_lat, listing.pickup_lng, loc.lat, loc.lng]);
+  const fee = useMemo(() => computeDeliveryFee(km, quantity), [km, quantity]);
+  const grandTotal = total + fee.buyerShare;
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
@@ -172,6 +185,10 @@ function OrderDialog({ listing, buyerId, defaultAddress, defaultPhone, onClose, 
       delivery_lng: loc.lng,
       buyer_phone: phone,
       notes: notes || null,
+      delivery_fee: fee.total,
+      delivery_fee_buyer_share: fee.buyerShare,
+      delivery_fee_farmer_share: fee.farmerShare,
+      distance_km: km != null ? Number(km.toFixed(2)) : null,
     });
     if (!error) {
       await supabase.from("crop_listings").update({ status: "sold" }).eq("id", listing.id);
@@ -203,7 +220,23 @@ function OrderDialog({ listing, buyerId, defaultAddress, defaultPhone, onClose, 
               <VoiceInput field="phone" onValue={setPhone} />
             </div>
           </div>
-          <div className="rounded-lg bg-muted p-3 text-sm font-medium">{t("total")}: ₹{total.toFixed(2)}</div>
+          <div className="space-y-1 rounded-lg bg-muted p-3 text-sm">
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("fair_pricing")}</div>
+            <div className="flex justify-between"><span>{t("crop_cost")}</span><span>₹{total.toFixed(2)}</span></div>
+            <div className="flex justify-between">
+              <span>{t("delivery_total")}{km != null ? ` · ${km.toFixed(1)} km` : ""}</span>
+              <span>₹{fee.total}</span>
+            </div>
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{t("farmer_share")}</span><span>₹{fee.farmerShare}</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span>{t("buyer_share")}</span><span>₹{fee.buyerShare}</span>
+            </div>
+            <div className="flex justify-between border-t pt-1 font-semibold">
+              <span>{t("grand_total")}</span><span>₹{grandTotal.toFixed(2)}</span>
+            </div>
+          </div>
           <div className="flex gap-2">
             <Button type="submit" disabled={busy || total <= 0} className="flex-1">{t("place_order")}</Button>
             <Button type="button" variant="outline" onClick={onClose}>{t("cancel")}</Button>
