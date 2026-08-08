@@ -59,6 +59,9 @@ interface Order {
   scheduled_pickup_at: string | null;
   scheduled_delivery_at: string | null;
   delivery_fee: number | null;
+  delivery_fee_buyer_share?: number | null;
+  delivery_fee_farmer_share?: number | null;
+  distance_km?: number | null;
   freshness_hours?: number | null;
   harvest_date?: string | null;
   crop_name?: string | null;
@@ -365,7 +368,10 @@ function DeliveryDash() {
             </div>
           )}
           {o.delivery_fee != null && (
-            <div className="text-xs font-medium">{t("delivery_fee")}: ₹{o.delivery_fee}</div>
+            <div className="mt-1 rounded-md bg-muted p-2 text-xs">
+              <div className="font-semibold">{t("delivery_total")}: ₹{o.delivery_fee}{o.distance_km != null ? ` · ${o.distance_km} km` : ""}</div>
+              <div className="text-muted-foreground">{t("farmer_share")}: ₹{o.delivery_fee_farmer_share ?? 0} · {t("buyer_share")}: ₹{o.delivery_fee_buyer_share ?? 0}</div>
+            </div>
           )}
         </div>
         <Badge>{t(o.status)}</Badge>
