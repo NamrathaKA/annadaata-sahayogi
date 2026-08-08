@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { computeDeliveryFee, haversineKm } from "@/lib/delivery-fee";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -20,10 +21,12 @@ export const Route = createFileRoute("/app/buyer")({
 interface Listing {
   id: string; farmer_id: string; crop_name: string; quantity: number; unit: string;
   price_per_unit: number; location: string; description: string | null;
+  pickup_lat: number | null; pickup_lng: number | null;
 }
 interface Order {
   id: string; quantity: number; total_price: number; status: string; delivery_address: string; created_at: string;
   scheduled_pickup_at: string | null; scheduled_delivery_at: string | null; delivery_fee: number | null;
+  delivery_fee_buyer_share: number | null;
 }
 
 function BuyerDash() {
@@ -104,13 +107,23 @@ function BuyerDash() {
             {orders.map((o) => (
               <Card key={o.id} className="flex flex-wrap items-start justify-between gap-3 p-4">
                 <div>
-                  <div className="font-medium">{o.quantity} · ₹{o.total_price}</div>
+                  <div className="font-medium">
+                    {o.quantity} · ₹{o.total_price}
+                    {o.delivery_fee_buyer_share != null && (
+                      <span className="text-muted-foreground"> + ₹{o.delivery_fee_buyer_share} {t("your_share")}</span>
+                    )}
+                  </div>
                   <div className="text-xs text-muted-foreground">{o.delivery_address}</div>
+                  {o.delivery_fee != null && (
+                    <div className="text-xs">{t("delivery_total")}: ₹{o.delivery_fee} · {t("fee_split_note")}</div>
+                  )}
+                  {o.status === "pending" && (
+                    <div className="text-xs text-muted-foreground">{t("awaiting_farmer")}</div>
+                  )}
                   {(o.scheduled_pickup_at || o.scheduled_delivery_at) && (
                     <div className="mt-2 space-y-0.5 border-l-2 border-primary pl-2 text-xs">
                       {o.scheduled_pickup_at && <div>{t("pickup")}: {new Date(o.scheduled_pickup_at).toLocaleString()}</div>}
                       {o.scheduled_delivery_at && <div>{t("delivery_time")}: {new Date(o.scheduled_delivery_at).toLocaleString()}</div>}
-                      {o.delivery_fee != null && <div>{t("delivery_fee")}: ₹{o.delivery_fee}</div>}
                     </div>
                   )}
                 </div>
@@ -145,7 +158,20 @@ function OrderDialog({ listing, buyerId, defaultAddress, defaultPhone, onClose, 
   const [phone, setPhone] = useState(defaultPhone);
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
-  const total = Math.max(0, Number(qty)) * listing.price_per_unit;
+  const quantity = Math.max(0, Number(qty));
+  const total = quantity * listing.price_per_unit;
+  const km = useMemo(() => {
+    if (listing.pickup_lat != null && listing.pickup_lng != null && loc.lat != null && loc.lng != null) {
+      return haversineKm(
+        { lat: listing.pickup_lat, lng: listing.pickup_lng },
+        { lat: loc.lat, lng: loc.lng },
+      );
+    }
+    return null;
+  }, [listing.pickup_lat, listing.pickup_lng, loc.lat, loc.lng]);
+  const fee = useMemo(() => computeDeliveryFee(km, quantity), [km, quantity]);
+  const grandTotal = total + fee.buyerShare;
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
@@ -160,6 +186,10 @@ function OrderDialog({ listing, buyerId, defaultAddress, defaultPhone, onClose, 
       delivery_lng: loc.lng,
       buyer_phone: phone,
       notes: notes || null,
+      delivery_fee: fee.total,
+      delivery_fee_buyer_share: fee.buyerShare,
+      delivery_fee_farmer_share: fee.farmerShare,
+      distance_km: km != null ? Number(km.toFixed(2)) : null,
     });
     if (!error) {
       await supabase.from("crop_listings").update({ status: "sold" }).eq("id", listing.id);
@@ -191,7 +221,23 @@ function OrderDialog({ listing, buyerId, defaultAddress, defaultPhone, onClose, 
               <VoiceInput field="phone" onValue={setPhone} />
             </div>
           </div>
-          <div className="rounded-lg bg-muted p-3 text-sm font-medium">{t("total")}: ₹{total.toFixed(2)}</div>
+          <div className="space-y-1 rounded-lg bg-muted p-3 text-sm">
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("fair_pricing")}</div>
+            <div className="flex justify-between"><span>{t("crop_cost")}</span><span>₹{total.toFixed(2)}</span></div>
+            <div className="flex justify-between">
+              <span>{t("delivery_total")}{km != null ? ` · ${km.toFixed(1)} km` : ""}</span>
+              <span>₹{fee.total}</span>
+            </div>
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{t("farmer_share")}</span><span>₹{fee.farmerShare}</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span>{t("buyer_share")}</span><span>₹{fee.buyerShare}</span>
+            </div>
+            <div className="flex justify-between border-t pt-1 font-semibold">
+              <span>{t("grand_total")}</span><span>₹{grandTotal.toFixed(2)}</span>
+            </div>
+          </div>
           <div className="flex gap-2">
             <Button type="submit" disabled={busy || total <= 0} className="flex-1">{t("place_order")}</Button>
             <Button type="button" variant="outline" onClick={onClose}>{t("cancel")}</Button>

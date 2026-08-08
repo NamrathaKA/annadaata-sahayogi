@@ -130,6 +130,18 @@ const kn: Dict = {
   ai_slots_title: "AI ಸೂಚಿಸಿದ ಸಮಯ",
   ai_slots_failed: "ಸಮಯ ಸೂಚನೆಗಳು ಸಿಗಲಿಲ್ಲ",
   slot_saved: "ವಿತರಣೆ ಸಮಯ ಉಳಿಸಲಾಗಿದೆ",
+  fair_pricing: "ನ್ಯಾಯಯುತ ವಿತರಣೆ ಶುಲ್ಕ",
+  crop_cost: "ಬೆಳೆ ಮೊತ್ತ",
+  delivery_total: "ಒಟ್ಟು ವಿತರಣೆ ಶುಲ್ಕ",
+  your_share: "ನಿಮ್ಮ ಪಾಲು",
+  farmer_share: "ರೈತನ ಪಾಲು (20%)",
+  buyer_share: "ಖರೀದಿದಾರರ ಪಾಲು (80%)",
+  grand_total: "ನೀವು ಪಾವತಿಸುವುದು",
+  net_earning: "ನಿಮಗೆ ಸಿಗುವ ಮೊತ್ತ",
+  fee_split_note: "ವಿತರಣೆ ಶುಲ್ಕ: ರೈತ 20% + ಖರೀದಿದಾರ 80%",
+  awaiting_farmer: "ರೈತನ ಸ್ವೀಕಾರಕ್ಕೆ ಕಾಯುತ್ತಿದೆ",
+  accept_order_fee: "ಆದೇಶ ಸ್ವೀಕರಿಸಿ",
+  fee_fixed_note: "ಶುಲ್ಕ ಈಗಾಗಲೇ ನಿಗದಿಯಾಗಿದೆ (ಬದಲಿಸಲಾಗದು)",
 };
 
 const en: Dict = {
@@ -250,6 +262,18 @@ const en: Dict = {
   ai_slots_title: "AI suggested time windows",
   ai_slots_failed: "Could not get time suggestions",
   slot_saved: "Delivery time saved",
+  fair_pricing: "Fair delivery charge",
+  crop_cost: "Crop cost",
+  delivery_total: "Total delivery charge",
+  your_share: "Your share",
+  farmer_share: "Farmer share (20%)",
+  buyer_share: "Buyer share (80%)",
+  grand_total: "You pay",
+  net_earning: "You receive",
+  fee_split_note: "Delivery charge split: farmer 20% + buyer 80%",
+  awaiting_farmer: "Waiting for farmer to accept",
+  accept_order_fee: "Accept order",
+  fee_fixed_note: "Fee is already fixed (cannot be changed)",
 };
 
 const hi: Dict = {
@@ -370,6 +394,18 @@ const hi: Dict = {
   ai_slots_title: "AI सुझाए समय",
   ai_slots_failed: "समय सुझाव नहीं मिले",
   slot_saved: "डिलीवरी समय सहेजा गया",
+  fair_pricing: "उचित डिलीवरी शुल्क",
+  crop_cost: "फसल राशि",
+  delivery_total: "कुल डिलीवरी शुल्क",
+  your_share: "आपका हिस्सा",
+  farmer_share: "किसान हिस्सा (20%)",
+  buyer_share: "खरीदार हिस्सा (80%)",
+  grand_total: "आप देंगे",
+  net_earning: "आपको मिलेगा",
+  fee_split_note: "डिलीवरी शुल्क: किसान 20% + खरीदार 80%",
+  awaiting_farmer: "किसान की स्वीकृति की प्रतीक्षा",
+  accept_order_fee: "ऑर्डर स्वीकारें",
+  fee_fixed_note: "शुल्क पहले से तय है (बदला नहीं जा सकता)",
 };
 
 const DICTS: Record<Lang, Dict> = { kn, en, hi, ta: kn, te: kn };

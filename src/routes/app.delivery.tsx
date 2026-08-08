@@ -45,15 +45,6 @@ function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: num
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-// Simple fee model: base ₹40 + ₹12/km + ₹2 per unit quantity, rounded to ₹5.
-function suggestFee(km: number | null, quantity: number): number {
-  const base = 40;
-  const perKm = 12;
-  const perUnit = 2;
-  const raw = base + (km ?? 5) * perKm + quantity * perUnit;
-  return Math.max(50, Math.round(raw / 5) * 5);
-}
-
 export const Route = createFileRoute("/app/delivery")({
   component: DeliveryDash,
 });
@@ -68,6 +59,9 @@ interface Order {
   scheduled_pickup_at: string | null;
   scheduled_delivery_at: string | null;
   delivery_fee: number | null;
+  delivery_fee_buyer_share?: number | null;
+  delivery_fee_farmer_share?: number | null;
+  distance_km?: number | null;
   freshness_hours?: number | null;
   harvest_date?: string | null;
   crop_name?: string | null;
@@ -121,7 +115,6 @@ function TripPlanner({
 }) {
   const [pickup, setPickup] = useState<string>(toLocalInput(order.scheduled_pickup_at));
   const [delivery, setDelivery] = useState<string>(toLocalInput(order.scheduled_delivery_at));
-  const [fee, setFee] = useState<string>(order.delivery_fee != null ? String(order.delivery_fee) : "");
   const [aiBusy, setAiBusy] = useState(false);
   const disabled = !SCHEDULABLE_STATUSES.has(order.status);
   const min = nowLocalInput();
@@ -136,10 +129,6 @@ function TripPlanner({
     }
     return null;
   }, [order]);
-
-  const handleSuggestFee = () => {
-    setFee(String(suggestFee(distanceKm, order.quantity)));
-  };
 
   const handleAiPlan = async () => {
     setAiBusy(true);
@@ -161,7 +150,6 @@ function TripPlanner({
       if (!response.ok) throw new Error(plan.error || t("ai_plan_failed"));
       setPickup(toLocalInput(plan.pickup));
       setDelivery(toLocalInput(plan.delivery));
-      setFee(String(plan.fee));
       toast.success(t("ai_plan_ready"));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("ai_plan_failed"));
@@ -172,16 +160,14 @@ function TripPlanner({
 
   const handleSave = () => {
     if (disabled) { toast.error(t("err_schedule_status")); return; }
-    if (!pickup || !delivery || !fee) return;
+    if (!pickup || !delivery) return;
     const pickupTs = new Date(pickup).getTime();
     const deliveryTs = new Date(delivery).getTime();
     if (pickupTs <= Date.now()) { toast.error(t("err_schedule_past")); return; }
     if (deliveryTs <= pickupTs) { toast.error(t("err_delivery_before_pickup")); return; }
     const freshnessMs = freshnessHours * 3600 * 1000;
     if (deliveryTs - pickupTs > freshnessMs) { toast.error(t("err_delivery_beyond_freshness")); return; }
-    const feeNum = Number(fee);
-    if (!Number.isFinite(feeNum) || feeNum <= 0) return;
-    onRequestSave(pickup, delivery, feeNum);
+    onRequestSave(pickup, delivery, order.delivery_fee ?? 0);
   };
 
   return (
@@ -206,19 +192,17 @@ function TripPlanner({
         </label>
       </div>
       <div className="flex flex-wrap items-end gap-2">
-        <label className="flex-1 space-y-1 text-xs">
-          <span className="text-muted-foreground">{t("delivery_fee")}</span>
-          <Input type="number" min={0} step={5} value={fee} disabled={disabled}
-            onChange={(e) => setFee(e.target.value)} placeholder="₹" />
-        </label>
-        <Button type="button" size="sm" variant="outline" onClick={handleSuggestFee} disabled={disabled}>
-          <Sparkles className="mr-1 h-3.5 w-3.5" /> {t("suggest_fee")}
-        </Button>
+        <div className="flex-1 space-y-0.5 text-xs">
+          <div className="text-muted-foreground">{t("delivery_fee")}</div>
+          <div className="font-semibold">₹{order.delivery_fee ?? "-"}</div>
+          <div className="text-muted-foreground">{t("fee_split_note")}</div>
+          <div className="text-muted-foreground">{t("fee_fixed_note")}</div>
+        </div>
         <Button type="button" size="sm" variant="outline" onClick={handleAiPlan} disabled={disabled || aiBusy}>
           <Sparkles className="mr-1 h-3.5 w-3.5" /> {aiBusy ? t("ai_thinking") : t("ai_plan_trip")}
         </Button>
         <Button type="button" size="sm" onClick={handleSave}
-          disabled={disabled || !pickup || !delivery || !fee}>
+          disabled={disabled || !pickup || !delivery}>
           {t("save_plan")}
         </Button>
       </div>
@@ -384,7 +368,10 @@ function DeliveryDash() {
             </div>
           )}
           {o.delivery_fee != null && (
-            <div className="text-xs font-medium">{t("delivery_fee")}: ₹{o.delivery_fee}</div>
+            <div className="mt-1 rounded-md bg-muted p-2 text-xs">
+              <div className="font-semibold">{t("delivery_total")}: ₹{o.delivery_fee}{o.distance_km != null ? ` · ${o.distance_km} km` : ""}</div>
+              <div className="text-muted-foreground">{t("farmer_share")}: ₹{o.delivery_fee_farmer_share ?? 0} · {t("buyer_share")}: ₹{o.delivery_fee_buyer_share ?? 0}</div>
+            </div>
           )}
         </div>
         <Badge>{t(o.status)}</Badge>

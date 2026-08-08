@@ -40,6 +40,8 @@ interface Order {
   scheduled_pickup_at: string | null;
   scheduled_delivery_at: string | null;
   delivery_fee: number | null;
+  delivery_fee_farmer_share: number | null;
+  distance_km: number | null;
   created_at: string;
 }
 
@@ -138,11 +140,20 @@ function FarmerDash() {
                   <div>
                     <div className="font-medium">{o.quantity} units · ₹{o.total_price}</div>
                     <div className="text-xs text-muted-foreground">{o.delivery_address} · {o.buyer_phone ?? ""}</div>
+                    {o.delivery_fee != null && (
+                      <div className="mt-2 space-y-0.5 rounded-md bg-muted p-2 text-xs">
+                        <div className="font-semibold uppercase tracking-wide text-muted-foreground">{t("fair_pricing")}</div>
+                        <div>{t("delivery_total")}: ₹{o.delivery_fee}{o.distance_km != null ? ` · ${o.distance_km} km` : ""}</div>
+                        <div>{t("farmer_share")}: −₹{o.delivery_fee_farmer_share ?? 0}</div>
+                        <div className="font-semibold">
+                          {t("net_earning")}: ₹{(Number(o.total_price) - Number(o.delivery_fee_farmer_share ?? 0)).toFixed(2)}
+                        </div>
+                      </div>
+                    )}
                     {(o.scheduled_pickup_at || o.scheduled_delivery_at) && (
                       <div className="mt-2 space-y-0.5 border-l-2 border-primary pl-2 text-xs">
                         {o.scheduled_pickup_at && <div>{t("pickup")}: {new Date(o.scheduled_pickup_at).toLocaleString()}</div>}
                         {o.scheduled_delivery_at && <div>{t("delivery_time")}: {new Date(o.scheduled_delivery_at).toLocaleString()}</div>}
-                        {o.delivery_fee != null && <div>{t("delivery_fee")}: ₹{o.delivery_fee}</div>}
                       </div>
                     )}
                   </div>
@@ -152,12 +163,13 @@ function FarmerDash() {
                       <Button
                         size="sm"
                         onClick={async () => {
-                          await supabase.from("orders").update({ status: "accepted" }).eq("id", o.id);
+                          const { error } = await supabase.from("orders").update({ status: "accepted" }).eq("id", o.id);
+                          if (error) { toast.error(error.message); return; }
                           toast.success("Accepted");
                           load();
                         }}
                       >
-                        {t("accept")}
+                        {t("accept_order_fee")}
                       </Button>
                     )}
                   </div>
