@@ -106,13 +106,23 @@ function BuyerDash() {
             {orders.map((o) => (
               <Card key={o.id} className="flex flex-wrap items-start justify-between gap-3 p-4">
                 <div>
-                  <div className="font-medium">{o.quantity} · ₹{o.total_price}</div>
+                  <div className="font-medium">
+                    {o.quantity} · ₹{o.total_price}
+                    {o.delivery_fee_buyer_share != null && (
+                      <span className="text-muted-foreground"> + ₹{o.delivery_fee_buyer_share} {t("your_share")}</span>
+                    )}
+                  </div>
                   <div className="text-xs text-muted-foreground">{o.delivery_address}</div>
+                  {o.delivery_fee != null && (
+                    <div className="text-xs">{t("delivery_total")}: ₹{o.delivery_fee} · {t("fee_split_note")}</div>
+                  )}
+                  {o.status === "pending" && (
+                    <div className="text-xs text-muted-foreground">{t("awaiting_farmer")}</div>
+                  )}
                   {(o.scheduled_pickup_at || o.scheduled_delivery_at) && (
                     <div className="mt-2 space-y-0.5 border-l-2 border-primary pl-2 text-xs">
                       {o.scheduled_pickup_at && <div>{t("pickup")}: {new Date(o.scheduled_pickup_at).toLocaleString()}</div>}
                       {o.scheduled_delivery_at && <div>{t("delivery_time")}: {new Date(o.scheduled_delivery_at).toLocaleString()}</div>}
-                      {o.delivery_fee != null && <div>{t("delivery_fee")}: ₹{o.delivery_fee}</div>}
                     </div>
                   )}
                 </div>
