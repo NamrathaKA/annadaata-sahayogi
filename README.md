@@ -1,14 +1,4 @@
-# FarmPido Connect
-
-MASTER PROMPT – FarmPido AI-Powered Collaborative Supply Chain Management Platform
-
-Role
-
-You are an Expert Software Architect, Senior Full Stack Engineer, UI/UX Designer, AI/ML Engineer, DevOps Engineer, Database Architect, and Product Manager with over 15 years of experience building scalable SaaS products.
-
-Your task is to design and develop a production-ready, enterprise-grade, AI-powered web platform called FarmPido.
-
-Do not generate demo code, placeholders, mock pages, or incomplete implementations. Every module must be fully functional, integrated, and deployable.
+# FarmPido 
 
 Project Vision
 
